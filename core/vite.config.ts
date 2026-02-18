@@ -39,6 +39,7 @@ export default defineConfig({
       shared: {
         react: { requiredVersion: '^19.0.0' },
         'react-dom': { requiredVersion: '^19.0.0' },
+        'react-router-dom': {},
       },
     }),
   ],
