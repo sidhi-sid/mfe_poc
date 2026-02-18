@@ -2,6 +2,7 @@ import path from 'path'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import federation from '@originjs/vite-plugin-federation'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -10,12 +11,32 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-  server: { port: 5175 },
+  server: { strictPort: true, port: 5175 },
+  build: {
+    rollupOptions: {
+      output: {
+        // Fixed name for remote entry so host can load /assets/remoteEntry.js
+        chunkFileNames: (chunkInfo) => {
+          if (chunkInfo.facadeModuleId?.includes('remoteEntry')) return 'assets/remoteEntry.js'
+          return 'assets/[name]-[hash].js'
+        },
+      },
+    },
+  },
   plugins: [
     tailwindcss(),
     react({
-      babel: {
-        plugins: [['babel-plugin-react-compiler']],
+      // React Compiler disabled: useMemoCache conflicts with host's shared React in Module Federation
+    }),
+    federation({
+      name: 'dashboard',
+      filename: 'remoteEntry.js',
+      exposes: {
+        './App': './src/remoteEntry.tsx',
+      },
+      shared: {
+        react: { requiredVersion: '^19.0.0' },
+        'react-dom': { requiredVersion: '^19.0.0' },
       },
     }),
   ],
