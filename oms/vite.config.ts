@@ -5,7 +5,6 @@ import path from 'path'
 import federation from '@originjs/vite-plugin-federation'
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -26,6 +25,7 @@ export default defineConfig({
     react({
       // React Compiler disabled: useMemoCache conflicts with host's shared React in Module Federation
     }),
+    tailwindcss(),
     federation({
       name: 'oms',
       filename: 'remoteEntry.js',
