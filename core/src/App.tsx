@@ -8,11 +8,14 @@ import {
 } from "@/components/ui/sidebar"
 import { useModules } from "@/hooks/useModules"
 import { FederationMFE } from "@/components/FederationMFE"
+import { Toaster } from "sonner"
+import { useMfeNotifications } from "@/hooks/useMfeNotifications"
 
 // Wrapper to handle sidebar toggle from Header
 const AppLayout = () => {
   const { toggleSidebar } = useSidebar();
   const { availableModules, loading } = useModules();
+  useMfeNotifications();
 
   return (
     <SidebarInset>
@@ -58,6 +61,7 @@ export default function App() {
         <AppSidebar />
         <AppLayout />
       </SidebarProvider>
+      <Toaster position="top-right" richColors />
     </BrowserRouter>
   )
 }
