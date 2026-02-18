@@ -1,5 +1,6 @@
 /**
  * Module Federation remote entry for OMS.
- * Exposes the OMS app for consumption by the core host.
+ * Exports OmsRoutes (without BrowserRouter) so it integrates cleanly
+ * with the host shell's router context.
  */
-export { default } from './App'
+export { OmsRoutes as default } from './App'

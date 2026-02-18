@@ -64,7 +64,7 @@ export default function CreateOrder() {
     if (!selectedInstrument) {
       const found = instruments.find((i) => i.id === instrumentId);
       if (found) selectInstrument(found);
-      else navigate('/');
+      else navigate('..');
     }
   }, [instrumentId, selectedInstrument, instruments, selectInstrument, navigate]);
 
@@ -86,12 +86,12 @@ export default function CreateOrder() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const success = await submitOrder();
-    if (success) navigate('/');
+    if (success) navigate('..');
   };
 
   const handleBack = () => {
     resetOrderForm();
-    navigate('/');
+    navigate('..');
   };
 
   return (

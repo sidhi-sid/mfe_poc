@@ -33,7 +33,7 @@ export default function InstrumentList() {
 
   const handleSelect = (instrument) => {
     selectInstrument(instrument);
-    navigate(`/order/${instrument.id}`);
+    navigate(`order/${instrument.id}`);
   };
 
   return (
