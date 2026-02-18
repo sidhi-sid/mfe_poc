@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom"
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom"
 import AppSidebar from "@/components/app-sidebar"
 import Header from "@/components/header"
 import {
@@ -6,34 +6,56 @@ import {
   SidebarProvider,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { useModules } from "@/hooks/useModules"
+import type { ModuleWithAvailability } from "@/hooks/useModules"
+
+function ModulePlaceholder({ module: m }: { module: ModuleWithAvailability }) {
+  return (
+    <>
+      <h1 className="text-3xl font-bold tracking-tight">{m.label}</h1>
+      <p className="text-muted-foreground mt-2">
+        {m.id === 'dashboard' ? 'Welcome to the dashboard.' : `Manage your ${m.label.toLowerCase()} here.`}
+      </p>
+    </>
+  )
+}
 
 // Wrapper to handle sidebar toggle from Header
 const AppLayout = () => {
   const { toggleSidebar } = useSidebar();
+  const { availableModules, loading } = useModules();
+
   return (
     <SidebarInset>
       <Header onMenuClick={toggleSidebar} />
       <div className="flex flex-1 flex-col gap-4 p-4 pt-20">
-        {/* Main Content Area (Placeholder for MFEs) */}
+        {/* MFE slot: remote apps render inside <main> via Routes / Module Federation.
+            Shell keeps: SidebarProvider + AppSidebar (left) + this SidebarInset (header + main).
+            Each route can lazy-load a remote MFE component as the element. */}
         <main className="container py-6">
-          <Routes>
-            <Route path="/" element={
-              <>
-                <h1 className="text-3xl font-bold tracking-tight">Core Application - Dashboard</h1>
-                <p className="text-muted-foreground mt-2">
-                  Welcome to the dashboard.
-                </p>
-              </>
-            } />
-            <Route path="/oms" element={
-              <>
-                <h1 className="text-3xl font-bold tracking-tight">Order Management</h1>
-                <p className="text-muted-foreground mt-2">
-                  Manage your orders here.
-                </p>
-              </>
-            } />
-          </Routes>
+          {loading ? (
+            <p className="text-muted-foreground">Loading modules...</p>
+          ) : (
+            <Routes>
+              {availableModules.map((m) => (
+                <Route
+                  key={m.id}
+                  path={m.path}
+                  element={<ModulePlaceholder module={m} />}
+                />
+              ))}
+              <Route
+                path="*"
+                element={
+                  availableModules.length > 0 ? (
+                    <Navigate to={availableModules[0].path} replace />
+                  ) : (
+                    <p className="text-muted-foreground">No modules available. Check that at least one MFE is running.</p>
+                  )
+                }
+              />
+            </Routes>
+          )}
         </main>
       </div>
     </SidebarInset>
