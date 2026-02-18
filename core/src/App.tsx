@@ -7,18 +7,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { useModules } from "@/hooks/useModules"
-import type { ModuleWithAvailability } from "@/hooks/useModules"
-
-function ModulePlaceholder({ module: m }: { module: ModuleWithAvailability }) {
-  return (
-    <>
-      <h1 className="text-3xl font-bold tracking-tight">{m.label}</h1>
-      <p className="text-muted-foreground mt-2">
-        {m.id === 'dashboard' ? 'Welcome to the dashboard.' : `Manage your ${m.label.toLowerCase()} here.`}
-      </p>
-    </>
-  )
-}
+import { FederationMFE } from "@/components/FederationMFE"
 
 // Wrapper to handle sidebar toggle from Header
 const AppLayout = () => {
@@ -41,7 +30,7 @@ const AppLayout = () => {
                 <Route
                   key={m.id}
                   path={m.path}
-                  element={<ModulePlaceholder module={m} />}
+                  element={<FederationMFE module={m} />}
                 />
               ))}
               <Route
