@@ -16,7 +16,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarSeparator,
   useSidebar,
 } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
@@ -35,7 +34,7 @@ const AppSidebar = () => {
     <Sidebar collapsible="icon" className="flex h-full flex-col justify-between">
       <div className="flex flex-col flex-1 min-h-0">
         {/* User Greeting - "Hello! Avinash" */}
-        <SidebarHeader className="shrink-0 bg-sidebar-primary text-sidebar-primary-foreground px-4 py-3 group-data-[collapsible=icon]:hidden">
+        <SidebarHeader className="shrink-0 border-b px-4 py-3 group-data-[collapsible=icon]:hidden">
           <p className="text-sm font-semibold truncate">Hello! {user?.name || 'User'}</p>
         </SidebarHeader>
 
@@ -53,8 +52,8 @@ const AppSidebar = () => {
                         isActive={isActive}
                         tooltip={item.label}
                         className={cn(
-                          isActive &&
-                            'bg-blue-100! text-blue-800! dark:bg-gray-600! dark:text-white! font-medium'
+                          'w-full justify-start text-foreground hover:bg-accent hover:text-accent-foreground',
+                          'data-[active=true]:bg-accent data-[active=true]:text-accent-foreground data-[active=true]:font-medium'
                         )}
                       >
                         <NavLink
@@ -62,6 +61,7 @@ const AppSidebar = () => {
                           onClick={() => {
                             if (isMobile) setOpenMobile(false);
                           }}
+                          className="flex items-center gap-2 text-inherit [&_svg]:text-inherit"
                         >
                           <item.icon className="h-5 w-5 shrink-0" />
                           <span>{item.label}</span>
@@ -76,14 +76,13 @@ const AppSidebar = () => {
         </SidebarContent>
       </div>
 
-      {/* Footer - Arabic, Logout (fixed at bottom) */}
-      <SidebarFooter className="shrink-0 border-t border-sidebar-border bg-sidebar p-2">
-        <SidebarSeparator className="mb-2" />
+      {/* Footer - Language & Logout (no extra line) */}
+      <SidebarFooter className="shrink-0 border-t p-2">
         <SidebarMenu className="gap-1">
           <SidebarMenuItem>
             <SidebarMenuButton
               tooltip="Arabic"
-              className="w-full justify-center bg-sidebar-primary text-sidebar-primary-foreground hover:opacity-90 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
+              className="w-full justify-start bg-background border text-foreground hover:bg-accent hover:text-accent-foreground"
             >
               <Globe className="h-4 w-4" />
               <span>Arabic</span>
@@ -92,7 +91,7 @@ const AppSidebar = () => {
           <SidebarMenuItem>
             <SidebarMenuButton
               tooltip="Logout"
-              className="w-full justify-center bg-sidebar-primary text-red-500 hover:bg-red-500/10 hover:text-red-600 dark:bg-gray-700 dark:text-red-400 dark:hover:bg-gray-600 dark:hover:text-red-300"
+              className="w-full justify-start bg-background border text-foreground hover:bg-accent hover:text-accent-foreground"
               onClick={() => useAuthStore.getState().logout()}
             >
               <LogOut className="h-4 w-4" />
