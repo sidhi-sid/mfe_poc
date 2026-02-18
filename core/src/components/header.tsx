@@ -9,7 +9,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useAuthStore, useThemeStore } from '@/store';
-import { Menu, ChevronDown, User, LogOut, Palette } from 'lucide-react';
+import { Menu, ChevronDown, User, LogOut, Moon } from 'lucide-react';
 
 const THEMES = [
   { name: 'Black', value: 'black', bg: 'bg-gray-900', ring: 'ring-gray-900' },
@@ -32,7 +32,7 @@ const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
   const currentTheme = THEMES.find((t) => t.value === color) || THEMES[0];
 
   return (
-    <header className="bg-background border-b h-16 flex items-center justify-between px-4 md:px-6 fixed top-0 left-0 right-0 z-50">
+    <header className="bg-gray-900 border-b border-gray-800 h-16 flex items-center justify-between px-4 md:px-6 fixed top-0 left-0 right-0 z-50">
       {/* Left side - Hamburger menu and Logo */}
       <div className="flex items-center gap-4">
         <Button
@@ -40,32 +40,35 @@ const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
           size="icon"
           onClick={onMenuClick}
           aria-label="Toggle menu"
+          className="text-white hover:bg-gray-800 hover:text-white"
         >
           <Menu className="h-5 w-5" />
         </Button>
 
-        {/* Logo */}
+        {/* Logo - Bank Muscat */}
         <div className="flex items-center gap-2">
-          <div className={`w-8 h-8 ${colorMap[color] || 'bg-red-600'} rounded flex items-center justify-center`}>
+          <div className="w-8 h-8 bg-gray-800 rounded flex items-center justify-center flex-shrink-0">
             <span className="text-white font-bold text-lg">M</span>
           </div>
-          <div className="flex flex-col">
-            <span className="text-sm font-semibold">بنك مسقط</span>
-            <span className="text-xs text-muted-foreground">Bank Muscat</span>
+          <div className="flex flex-col leading-tight">
+            <span className="text-sm font-semibold text-white">بنك مسقط</span>
+            <span className="text-xs text-gray-300">Bank Muscat</span>
           </div>
         </div>
       </div>
 
       {/* Right side - Theme picker + User dropdown */}
       <div className="flex items-center gap-2">
-
-        {/* Theme Changer */}
+        {/* Theme */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-2">
-              <Palette className="h-4 w-4" />
-              <span className="hidden sm:inline text-xs">Theme</span>
-              <div className={`w-3 h-3 rounded-full ${currentTheme.bg}`} />
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-2 text-gray-200 hover:bg-gray-800 hover:text-white border border-gray-700"
+            >
+              <Moon className="h-4 w-4" />
+              <span className="hidden sm:inline text-sm">Theme</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-40">
@@ -93,16 +96,19 @@ const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
         {/* User Dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              className="flex items-center gap-2 text-gray-200 hover:bg-gray-800 hover:text-white"
+            >
               <Avatar className="h-8 w-8">
-                <AvatarFallback className={`${colorMap[color] || 'bg-red-600'} text-white text-sm`}>
+                <AvatarFallback className="bg-gray-700 text-white text-sm">
                   {user?.name?.charAt(0) || 'U'}
                 </AvatarFallback>
               </Avatar>
-              <span className="text-sm font-medium hidden sm:inline-block">
+              <span className="text-sm font-medium hidden sm:inline-block text-white">
                 {user?.name || 'User'}
               </span>
-              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              <ChevronDown className="h-4 w-4 text-gray-400" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
