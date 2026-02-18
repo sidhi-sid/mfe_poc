@@ -19,16 +19,18 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
+import { useModules } from '@/hooks/useModules';
 
-const menuItems = [
-  { path: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { path: '/oms', label: 'Order Management', icon: ClipboardList },
-];
+const ICON_MAP: Record<string, typeof LayoutDashboard> = {
+  LayoutDashboard,
+  ClipboardList,
+};
 
 const AppSidebar = () => {
   const user = useAuthStore((state) => state.user);
   const location = useLocation();
   const { isMobile, setOpenMobile } = useSidebar();
+  const { availableModules, loading } = useModules();
 
   return (
     <Sidebar collapsible="icon" className="flex h-full flex-col justify-between">
@@ -38,38 +40,47 @@ const AppSidebar = () => {
           <p className="text-sm font-semibold truncate">Hello! {user?.name || 'User'}</p>
         </SidebarHeader>
 
-        {/* Navigation - Dashboard, Order Management (flex-1 so footer is pushed down) */}
+        {/* Navigation - dynamically from module.json (only available MFEs) */}
         <SidebarContent className="flex-1 min-h-0 overflow-y-auto">
           <SidebarGroup>
             <SidebarGroupContent>
               <SidebarMenu className="px-2 gap-0.5">
-                {menuItems.map((item) => {
-                  const isActive = location.pathname === item.path;
-                  return (
-                    <SidebarMenuItem key={item.path}>
-                      <SidebarMenuButton
-                        asChild
-                        isActive={isActive}
-                        tooltip={item.label}
-                        className={cn(
-                          'w-full justify-start text-foreground hover:bg-accent hover:text-accent-foreground',
-                          'data-[active=true]:bg-accent data-[active=true]:text-accent-foreground data-[active=true]:font-medium'
-                        )}
-                      >
-                        <NavLink
-                          to={item.path}
-                          onClick={() => {
-                            if (isMobile) setOpenMobile(false);
-                          }}
-                          className="flex items-center gap-2 text-inherit [&_svg]:text-inherit"
+                {loading ? (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton className="text-muted-foreground" disabled>
+                      <span className="text-sm">Loading...</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ) : (
+                  availableModules.map((item) => {
+                    const IconComponent = ICON_MAP[item.icon] ?? LayoutDashboard;
+                    const isActive = location.pathname === item.path;
+                    return (
+                      <SidebarMenuItem key={item.id}>
+                        <SidebarMenuButton
+                          asChild
+                          isActive={isActive}
+                          tooltip={item.label}
+                          className={cn(
+                            'w-full justify-start text-foreground hover:bg-accent hover:text-accent-foreground',
+                            'data-[active=true]:bg-accent data-[active=true]:text-accent-foreground data-[active=true]:font-medium'
+                          )}
                         >
-                          <item.icon className="h-5 w-5 shrink-0" />
-                          <span>{item.label}</span>
-                        </NavLink>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  );
-                })}
+                          <NavLink
+                            to={item.path}
+                            onClick={() => {
+                              if (isMobile) setOpenMobile(false);
+                            }}
+                            className="flex items-center gap-2 text-inherit [&_svg]:text-inherit"
+                          >
+                            <IconComponent className="h-5 w-5 shrink-0" />
+                            <span>{item.label}</span>
+                          </NavLink>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })
+                )}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
