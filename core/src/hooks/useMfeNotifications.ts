@@ -20,7 +20,6 @@ export function useMfeNotifications() {
           toast.info(title, { description: message });
       }
     };
-    console.log("HIIIIIIIIII")
 
     window.addEventListener("mfe:notification", handler as EventListener);
     return () => {
