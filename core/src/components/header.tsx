@@ -10,13 +10,16 @@ import { Button } from '@/components/ui/button';
 import ThemeToggle from '@/components/theme-toggle';
 import { useAuthStore } from '@/store';
 import { Menu, User, LogOut } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
   const user = useAuthStore((state) => state.user);
+  const { t } = useTranslation();
 
   return (
-    <header className="bg-background border-b h-14 flex items-center justify-between px-4 md:px-6 fixed top-0 left-0 right-0 z-50">
-      {/* Left - Hamburger (same style as M logo) + Logo */}
+    // inset-x-0 spans full width in both LTR and RTL (replaces left-0 right-0)
+    // flex justify-between automatically swaps child order in RTL
+    <header className="bg-background border-b h-14 flex items-center justify-between px-4 md:px-6 fixed top-0 inset-x-0 z-50">
       <div className="flex items-center gap-3">
         <Button
           variant="outline"
@@ -38,7 +41,6 @@ const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
         </div>
       </div>
 
-      {/* Right - Theme toggle + Account button */}
       <div className="flex items-center gap-2">
         <ThemeToggle />
         <DropdownMenu>
@@ -55,16 +57,16 @@ const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuLabel>{t('header.myAccount')}</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <User className="mr-2 h-4 w-4" />
-              Account Info
+              <User className="me-2 h-4 w-4" />
+              {t('header.accountInfo')}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => useAuthStore.getState().logout()}>
-              <LogOut className="mr-2 h-4 w-4" />
-              Logout
+              <LogOut className="me-2 h-4 w-4" />
+              {t('header.logout')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

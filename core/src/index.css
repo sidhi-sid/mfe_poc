@@ -141,3 +141,8 @@ a {
     @apply bg-background text-foreground;
   }
 }
+
+/* RTL: system Arabic font — no CDN dependency */
+[dir="rtl"] {
+  font-family: "Segoe UI", Tahoma, "Arabic Typesetting", system-ui, sans-serif;
+}

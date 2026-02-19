@@ -1,0 +1,14 @@
+{
+  "sidebar": {
+    "greeting": "Hello!",
+    "loading": "Loading...",
+    "switchToArabic": "عربي",
+    "switchToEnglish": "English",
+    "logout": "Logout"
+  },
+  "header": {
+    "myAccount": "My Account",
+    "accountInfo": "Account Info",
+    "logout": "Logout"
+  }
+}

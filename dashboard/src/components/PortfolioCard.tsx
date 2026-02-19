@@ -1,3 +1,4 @@
+import { useAppTranslation } from '../useAppTranslation'
 import {
   Card,
   CardContent,
@@ -32,11 +33,12 @@ function formatPercent(value: number) {
 export function PortfolioCard() {
   const portfolio = mockPortfolio
   const isPositive = portfolio.dayChangePercent >= 0
+  const { t } = useAppTranslation()
 
   return (
     <Card className="w-full overflow-hidden shadow-sm">
       <CardHeader className="border-b bg-card pb-6">
-        <CardTitle className="text-lg font-semibold">Customer Portfolio</CardTitle>
+        <CardTitle className="text-lg font-semibold">{t('portfolio.title')}</CardTitle>
         <CardDescription className="text-muted-foreground">
           {portfolio.customerName} · {portfolio.customerId}
         </CardDescription>
@@ -45,24 +47,22 @@ export function PortfolioCard() {
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="flex min-h-[88px] flex-col justify-between rounded-lg border border-border/80 bg-muted/40 p-4 transition-colors hover:bg-muted/60">
             <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Total Value
+              {t('portfolio.totalValue')}
             </span>
             <div>
               <p className="text-lg font-semibold tabular-nums tracking-tight">
                 {formatCurrency(portfolio.totalValue)}
               </p>
-              <p
-                className={`mt-0.5 text-xs font-medium tabular-nums ${
-                  isPositive ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"
-                }`}
-              >
-                {formatPercent(portfolio.dayChangePercent)} today
+              <p className={`mt-0.5 text-xs font-medium tabular-nums ${
+                isPositive ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"
+              }`}>
+                {formatPercent(portfolio.dayChangePercent)} {t('portfolio.today')}
               </p>
             </div>
           </div>
           <div className="flex min-h-[88px] flex-col justify-between rounded-lg border border-border/80 bg-muted/40 p-4 transition-colors hover:bg-muted/60">
             <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Invested
+              {t('portfolio.invested')}
             </span>
             <p className="text-lg font-semibold tabular-nums tracking-tight">
               {formatCurrency(portfolio.investedValue)}
@@ -70,7 +70,7 @@ export function PortfolioCard() {
           </div>
           <div className="flex min-h-[88px] flex-col justify-between rounded-lg border border-border/80 bg-muted/40 p-4 transition-colors hover:bg-muted/60">
             <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Cash Balance
+              {t('portfolio.cashBalance')}
             </span>
             <p className="text-lg font-semibold tabular-nums tracking-tight">
               {formatCurrency(portfolio.cashBalance)}
@@ -79,25 +79,26 @@ export function PortfolioCard() {
         </div>
 
         <div className="space-y-3">
-          <h3 className="text-sm font-medium text-foreground">Holdings</h3>
+          <h3 className="text-sm font-medium text-foreground">{t('portfolio.holdings')}</h3>
           <div className="rounded-lg border border-border/80 bg-card">
             <Table>
               <TableHeader>
                 <TableRow className="border-border/80 hover:bg-transparent">
                   <TableHead className="h-11 bg-muted/50 font-medium text-muted-foreground">
-                    Symbol
+                    {t('portfolio.symbol')}
                   </TableHead>
                   <TableHead className="h-11 bg-muted/50 font-medium text-muted-foreground">
-                    Name
+                    {t('portfolio.name')}
                   </TableHead>
-                  <TableHead className="h-11 bg-muted/50 text-right font-medium text-muted-foreground">
-                    Qty
+                  {/* text-end = logical right-align: right in LTR, left in RTL */}
+                  <TableHead className="h-11 bg-muted/50 text-end font-medium text-muted-foreground">
+                    {t('portfolio.qty')}
                   </TableHead>
-                  <TableHead className="h-11 bg-muted/50 text-right font-medium text-muted-foreground">
-                    Value
+                  <TableHead className="h-11 bg-muted/50 text-end font-medium text-muted-foreground">
+                    {t('portfolio.value')}
                   </TableHead>
-                  <TableHead className="h-11 bg-muted/50 text-right font-medium text-muted-foreground">
-                    Change
+                  <TableHead className="h-11 bg-muted/50 text-end font-medium text-muted-foreground">
+                    {t('portfolio.change')}
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -106,17 +107,15 @@ export function PortfolioCard() {
                   <TableRow key={holding.symbol} className="border-border/80">
                     <TableCell className="py-3 font-medium">{holding.symbol}</TableCell>
                     <TableCell className="py-3 text-muted-foreground">{holding.name}</TableCell>
-                    <TableCell className="py-3 text-right tabular-nums">{holding.quantity}</TableCell>
-                    <TableCell className="py-3 text-right tabular-nums">
+                    <TableCell className="py-3 text-end tabular-nums">{holding.quantity}</TableCell>
+                    <TableCell className="py-3 text-end tabular-nums">
                       {formatCurrency(holding.value)}
                     </TableCell>
-                    <TableCell
-                      className={`py-3 text-right font-medium tabular-nums ${
-                        holding.changePercent >= 0
-                          ? "text-emerald-600 dark:text-emerald-400"
-                          : "text-red-600 dark:text-red-400"
-                      }`}
-                    >
+                    <TableCell className={`py-3 text-end font-medium tabular-nums ${
+                      holding.changePercent >= 0
+                        ? "text-emerald-600 dark:text-emerald-400"
+                        : "text-red-600 dark:text-red-400"
+                    }`}>
                       {formatPercent(holding.changePercent)}
                     </TableCell>
                   </TableRow>
@@ -127,7 +126,7 @@ export function PortfolioCard() {
         </div>
 
         <p className="text-muted-foreground border-t border-border/80 pt-4 text-xs">
-          Last updated: {new Date(portfolio.lastUpdated).toLocaleString()}
+          {t('portfolio.lastUpdated')}: {new Date(portfolio.lastUpdated).toLocaleString()}
         </p>
       </CardContent>
     </Card>

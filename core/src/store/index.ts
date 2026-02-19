@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { applyLanguage, getStoredLanguage, type Language } from '@/lib/language'
 
 interface User {
   name: string
@@ -25,4 +26,19 @@ interface ThemeState {
 export const useThemeStore = create<ThemeState>((set) => ({
   color: 'black', // Default theme
   setColor: (color) => set({ color }),
+}))
+
+interface LanguageState {
+  language: Language
+  isRTL: boolean
+  setLanguage: (lang: Language) => void
+}
+
+export const useLanguageStore = create<LanguageState>((set) => ({
+  language: getStoredLanguage(),
+  isRTL: getStoredLanguage() === 'ar',
+  setLanguage: (lang) => {
+    applyLanguage(lang)
+    set({ language: lang, isRTL: lang === 'ar' })
+  },
 }))

@@ -1,0 +1,14 @@
+{
+  "sidebar": {
+    "greeting": "أهلاً!",
+    "loading": "جارٍ التحميل...",
+    "switchToArabic": "عربي",
+    "switchToEnglish": "English",
+    "logout": "تسجيل الخروج"
+  },
+  "header": {
+    "myAccount": "حسابي",
+    "accountInfo": "معلومات الحساب",
+    "logout": "تسجيل الخروج"
+  }
+}

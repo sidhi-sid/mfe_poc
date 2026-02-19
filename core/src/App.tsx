@@ -1,4 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom"
+import { I18nextProvider } from "react-i18next"
+import coreI18n from "./i18n"
 import AppSidebar from "@/components/app-sidebar"
 import Header from "@/components/header"
 import {
@@ -53,11 +55,13 @@ const AppLayout = () => {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <SidebarProvider>
-        <AppSidebar />
-        <AppLayout />
-      </SidebarProvider>
-    </BrowserRouter>
+    <I18nextProvider i18n={coreI18n}>
+      <BrowserRouter>
+        <SidebarProvider>
+          <AppSidebar />
+          <AppLayout />
+        </SidebarProvider>
+      </BrowserRouter>
+    </I18nextProvider>
   )
 }
