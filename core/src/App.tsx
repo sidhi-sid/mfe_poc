@@ -17,11 +17,11 @@ const AppLayout = () => {
   return (
     <SidebarInset>
       <Header onMenuClick={toggleSidebar} />
-      <div className="flex flex-1 flex-col gap-4 p-4 pt-20">
+      <div className="flex flex-1 flex-col pt-14 overflow-auto">
         {/* MFE slot: remote apps render inside <main> via Routes / Module Federation.
             Shell keeps: SidebarProvider + AppSidebar (left) + this SidebarInset (header + main).
             Each route can lazy-load a remote MFE component as the element. */}
-        <main className="container py-6">
+        <main className="flex-1 p-6">
           {loading ? (
             <p className="text-muted-foreground">Loading modules...</p>
           ) : (

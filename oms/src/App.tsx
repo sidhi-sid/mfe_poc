@@ -4,7 +4,7 @@ import CreateOrder from '@/pages/CreateOrder';
 
 export function OmsRoutes() {
   return (
-    <div className="min-h-screen bg-background text-foreground antialiased">
+    <div>
       <Routes>
         <Route path="/" element={<InstrumentList />} />
         <Route path="/order/:instrumentId" element={<CreateOrder />} />
