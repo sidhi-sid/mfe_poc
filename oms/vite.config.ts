@@ -33,9 +33,9 @@ export default defineConfig({
         './App': './src/remoteEntry.tsx',
       },
       shared: {
-        react: { requiredVersion: '^19.0.0' },
-        'react-dom': { requiredVersion: '^19.0.0' },
-        'react-router-dom': {},
+        react: { requiredVersion: '^19.0.0', singleton: true },
+        'react-dom': { requiredVersion: '^19.0.0', singleton: true },
+        'react-router-dom': { singleton: true },
       },
     }),
   ],

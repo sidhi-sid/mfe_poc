@@ -18,8 +18,7 @@ const federationRemotes: Record<string, string> = {}
 for (const m of moduleJson.modules ?? []) {
   if (m.baseUrl && m.baseUrl.trim() !== "") {
     const base = m.baseUrl.replace(/\/$/, "")
-    // Plugin emits remoteEntry.js under build.assetsDir (default "assets")
-    federationRemotes[m.id] = `${base}/assets/remoteEntry.js`
+    federationRemotes[m.id] = `${base}/remoteEntry.js`
   }
 }
 
@@ -37,9 +36,9 @@ export default defineConfig({
       name: 'core',
       remotes: federationRemotes,
       shared: {
-        react: { requiredVersion: '^19.0.0' },
-        'react-dom': { requiredVersion: '^19.0.0' },
-        'react-router-dom': {},
+        react: { requiredVersion: '^19.0.0', singleton: true },
+        'react-dom': { requiredVersion: '^19.0.0', singleton: true },
+        'react-router-dom': { singleton: true },
       },
     }),
   ],
