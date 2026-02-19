@@ -1,3 +1,4 @@
+import { ArrowUpRight } from "lucide-react"
 import {
   Card,
   CardContent,
@@ -5,6 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import {
   Table,
   TableBody,
@@ -14,6 +16,15 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { mockPortfolio } from "@/data/portfolio-mock"
+
+const SYMBOL_TO_INSTRUMENT_ID: Record<string, string> = {
+  AAPL: "INS001",
+  MSFT: "INS002",
+  GOOGL: "INS011",
+  AMZN: "INS012",
+  VOO: "INS013",
+  NVDA: "INS014",
+}
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("en-US", {
@@ -99,6 +110,9 @@ export function PortfolioCard() {
                   <TableHead className="h-11 bg-muted/50 text-right font-medium text-muted-foreground">
                     Change
                   </TableHead>
+                  <TableHead className="h-11 bg-muted/50 text-center font-medium text-muted-foreground">
+                    Action
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -118,6 +132,23 @@ export function PortfolioCard() {
                       }`}
                     >
                       {formatPercent(holding.changePercent)}
+                    </TableCell>
+                    <TableCell className="py-3 text-center">
+                      {SYMBOL_TO_INSTRUMENT_ID[holding.symbol] ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 gap-1 text-xs"
+                          onClick={() => {
+                            window.location.href = `/oms/order/${SYMBOL_TO_INSTRUMENT_ID[holding.symbol]}`
+                          }}
+                        >
+                          Trade
+                          <ArrowUpRight className="h-3 w-3" />
+                        </Button>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}
