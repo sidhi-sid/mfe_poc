@@ -1,10 +1,20 @@
 import { useEffect } from "react";
 import { toast } from "sonner";
+import { useNotificationStore } from "@/store";
 
 export function useMfeNotifications() {
   useEffect(() => {
     const handler = (e: CustomEvent) => {
-      const { type, title, message } = e.detail;
+      const detail = e.detail as { source?: string; type: string; title: string; message: string; timestamp?: number };
+      useNotificationStore.getState().addNotification({
+        source: detail.source ?? "mfe",
+        type: detail.type ?? "info",
+        title: detail.title ?? "",
+        message: detail.message ?? "",
+        timestamp: detail.timestamp ?? Date.now(),
+      });
+
+      const { type, title, message } = detail;
 
       switch (type) {
         case "success":
