@@ -1,13 +1,15 @@
+/* Explicitly define the Cascade Layer precedence.
+   mfe-utilities (injected by remotes at runtime) is listed BEFORE the native 'utilities' layer.
+   This guarantees that Core's responsive utility classes permanently overpower remote utilities,
+   preventing remote injections from breaking the Sidebar layout. */
+@layer theme, base, components, mfe-utilities, utilities;
+
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-/* Scan remote MFE source files so Core's Tailwind build covers all their utility classes.
-   Remotes rely on Core's CSS — they do NOT inject their own global CSS when federated. */
-@source "../../dashboard/src";
-@source "../../oms/src";
-
 @custom-variant dark (&:is(.dark *));
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -137,6 +139,7 @@ a {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
