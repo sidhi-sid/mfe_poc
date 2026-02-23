@@ -1,0 +1,18 @@
+{
+  "title": "Dashboard",
+  "subtitle": "Customer portfolio overview",
+  "portfolio": {
+    "title": "Customer Portfolio",
+    "totalValue": "Total Value",
+    "today": "today",
+    "invested": "Invested",
+    "cashBalance": "Cash Balance",
+    "holdings": "Holdings",
+    "symbol": "Symbol",
+    "name": "Name",
+    "qty": "Qty",
+    "value": "Value",
+    "change": "Change",
+    "lastUpdated": "Last updated"
+  }
+}

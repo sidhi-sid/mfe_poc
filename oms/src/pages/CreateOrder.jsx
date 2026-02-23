@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useAppTranslation } from '../useAppTranslation';
 import { ArrowLeft, ExternalLink, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,18 +8,9 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import useOmsStore from '@/store/useOmsStore';
 
@@ -42,6 +34,7 @@ const FREQUENCY_OPTIONS = [
 export default function CreateOrder() {
   const { instrumentId } = useParams();
   const navigate = useNavigate();
+  const { t } = useAppTranslation();
 
   const instruments = useOmsStore((s) => s.instruments);
   const selectedInstrument = useOmsStore((s) => s.selectedInstrument);
@@ -96,67 +89,61 @@ export default function CreateOrder() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
-      <Button variant="ghost" size="sm" onClick={handleBack} className="mb-4 -ml-2">
-        <ArrowLeft className="mr-1 h-4 w-4" />
-        Back to Instruments
+      {/* -ms-2 = logical negative margin-start (replaces -ml-2) */}
+      <Button variant="ghost" size="sm" onClick={handleBack} className="mb-4 -ms-2">
+        {/* rtl:rotate-180 flips arrow direction in RTL */}
+        <ArrowLeft className="me-1 h-4 w-4 rtl:rotate-180 transition-transform" />
+        {t('order.back')}
       </Button>
 
       <div className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight">Create Order</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Review instrument details and place your order
-        </p>
+        <h1 className="text-2xl font-bold tracking-tight">{t('order.title')}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{t('order.subtitle')}</p>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 items-start">
-        {/* ───── Instrument Details ───── */}
+        {/* Instrument Details */}
         <Card>
           <CardHeader>
-            <CardTitle>Instrument Details</CardTitle>
+            <CardTitle>{t('order.instrumentDetails')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <DetailField label="Name" value={selectedInstrument.name} />
-              <DetailField label="Ticker" value={selectedInstrument.ticker} className="font-bold text-primary" />
+              <DetailField label={t('order.name')} value={selectedInstrument.name} />
+              <DetailField label={t('order.ticker')} value={selectedInstrument.ticker} className="font-bold text-primary" />
               <div>
-                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Asset Type</p>
+                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{t('order.assetType')}</p>
                 <Badge variant="secondary" className="mt-1">{selectedInstrument.assetType}</Badge>
               </div>
-              <DetailField label="Sub Asset Type" value={selectedInstrument.subAssetType} />
+              <DetailField label={t('order.subAssetType')} value={selectedInstrument.subAssetType} />
               <DetailField
-                label="Price"
+                label={t('order.price')}
                 value={`${selectedInstrument.currency} ${selectedInstrument.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
                 className="font-bold text-emerald-600"
               />
-              <DetailField label="Exchange" value={selectedInstrument.exchange} />
+              <DetailField label={t('order.exchange')} value={selectedInstrument.exchange} />
             </div>
-
             <Separator />
-
             <Button variant="link" className="h-auto p-0 text-sm" asChild>
               <a href={selectedInstrument.factsheetUrl} target="_blank" rel="noopener noreferrer">
-                View Factsheet <ExternalLink className="ml-1 h-3.5 w-3.5" />
+                {t('order.viewFactsheet')} <ExternalLink className="ms-1 h-3.5 w-3.5" />
               </a>
             </Button>
           </CardContent>
         </Card>
 
-        {/* ───── Order Form ───── */}
+        {/* Order Form */}
         <Card>
           <CardHeader>
-            <CardTitle>Order Form</CardTitle>
+            <CardTitle>{t('order.orderForm')}</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Bank Account */}
               <div className="space-y-2">
-                <Label htmlFor="bankAccount">Bank Account</Label>
-                <Select
-                  value={orderForm.bankAccountId}
-                  onValueChange={(val) => setOrderField('bankAccountId', val)}
-                >
+                <Label htmlFor="bankAccount">{t('order.bankAccount')}</Label>
+                <Select value={orderForm.bankAccountId} onValueChange={(val) => setOrderField('bankAccountId', val)}>
                   <SelectTrigger id="bankAccount" className="w-full">
-                    <SelectValue placeholder="Select a bank account" />
+                    <SelectValue placeholder={t('order.selectAccount')} />
                   </SelectTrigger>
                   <SelectContent>
                     {bankAccounts.map((ba) => (
@@ -168,240 +155,145 @@ export default function CreateOrder() {
                 </Select>
               </div>
 
-              {/* Buy / Sell */}
               <div className="space-y-2">
-                <Label>Buy / Sell</Label>
-                <Select
-                  value={orderForm.transactionType}
-                  onValueChange={setTransactionType}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
+                <Label>{t('order.buySell')}</Label>
+                <Select value={orderForm.transactionType} onValueChange={setTransactionType}>
+                  <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {TRANSACTION_TYPES.map((t) => (
-                      <SelectItem key={t.value} value={t.value}>
-                        {t.label}
-                      </SelectItem>
+                    {TRANSACTION_TYPES.map((txn) => (
+                      <SelectItem key={txn.value} value={txn.value}>{txn.label}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
-              {/* Order Type — hidden for SIP/SWP */}
               {!isSipSwp && (
                 <div className="space-y-2">
-                  <Label>Order Type</Label>
+                  <Label>{t('order.orderType')}</Label>
                   <div className="flex gap-2">
                     {['MKT', 'LMT'].map((type) => (
                       <Button
-                        key={type}
-                        type="button"
+                        key={type} type="button"
                         variant={orderForm.orderType === type ? 'default' : 'outline'}
                         className="flex-1"
                         onClick={() => setOrderField('orderType', type)}
                       >
-                        {type === 'MKT' ? 'Market' : 'Limit'}
+                        {type === 'MKT' ? t('order.market') : t('order.limit')}
                       </Button>
                     ))}
                   </div>
                 </div>
               )}
 
-              {/* Limit Price — only for LMT orders */}
               {isLimitOrder && !isSipSwp && (
                 <div className="space-y-2">
-                  <Label htmlFor="limitPrice">Limit Price ({selectedInstrument.currency})</Label>
-                  <Input
-                    id="limitPrice"
-                    type="number"
-                    min="0.01"
-                    step="0.01"
-                    placeholder="Enter limit price"
-                    value={orderForm.limitPrice}
-                    onChange={(e) => setOrderField('limitPrice', e.target.value)}
-                  />
+                  <Label htmlFor="limitPrice">{t('order.limitPrice')} ({selectedInstrument.currency})</Label>
+                  <Input id="limitPrice" type="number" min="0.01" step="0.01"
+                    value={orderForm.limitPrice} onChange={(e) => setOrderField('limitPrice', e.target.value)} />
                 </div>
               )}
 
-              {/* Order By toggle */}
               <div className="space-y-2">
-                <Label>Order By</Label>
+                <Label>{t('order.orderBy')}</Label>
                 <div className="flex gap-2">
                   {['quantity', 'amount'].map((mode) => (
                     <Button
-                      key={mode}
-                      type="button"
+                      key={mode} type="button"
                       variant={orderForm.orderBy === mode ? 'default' : 'outline'}
                       className="flex-1 capitalize"
                       onClick={() => setOrderField('orderBy', mode)}
                     >
-                      {mode}
+                      {t(`order.${mode}`)}
                     </Button>
                   ))}
                 </div>
               </div>
 
-              {/* Quantity */}
               <div className="space-y-2">
                 <Label htmlFor="quantity">
-                  Quantity
+                  {t('order.quantity')}
                   {isOrderByAmount && derivedQty !== null && (
-                    <span className="ml-2 text-xs font-normal text-muted-foreground">
-                      (≈ {derivedQty} units)
+                    <span className="ms-2 text-xs font-normal text-muted-foreground">
+                      (≈ {derivedQty} {t('order.units')})
                     </span>
                   )}
                 </Label>
-                <Input
-                  id="quantity"
-                  type="number"
-                  min="1"
-                  step="1"
-                  placeholder="Enter quantity"
-                  value={orderForm.quantity}
-                  onChange={(e) => setOrderField('quantity', e.target.value)}
-                  disabled={isOrderByAmount}
-                />
+                <Input id="quantity" type="number" min="1" step="1"
+                  value={orderForm.quantity} onChange={(e) => setOrderField('quantity', e.target.value)}
+                  disabled={isOrderByAmount} />
               </div>
 
-              {/* Amount */}
               <div className="space-y-2">
-                <Label htmlFor="amount">Amount ({selectedInstrument.currency})</Label>
-                <Input
-                  id="amount"
-                  type="number"
-                  min="0.01"
-                  step="0.01"
-                  placeholder="Enter amount"
-                  value={orderForm.amount}
-                  onChange={(e) => setOrderField('amount', e.target.value)}
-                  disabled={isOrderByQuantity}
-                />
+                <Label htmlFor="amount">{t('order.amount')} ({selectedInstrument.currency})</Label>
+                <Input id="amount" type="number" min="0.01" step="0.01"
+                  value={orderForm.amount} onChange={(e) => setOrderField('amount', e.target.value)}
+                  disabled={isOrderByQuantity} />
               </div>
 
-              {/* Fee Exception */}
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="feeException"
-                    checked={orderForm.feeExceptionApplicable}
-                    onCheckedChange={(checked) =>
-                      setOrderField('feeExceptionApplicable', !!checked)
-                    }
-                  />
-                  <Label htmlFor="feeException" className="cursor-pointer">
-                    Fee Exception Applicable
-                  </Label>
+                  <Checkbox id="feeException" checked={orderForm.feeExceptionApplicable}
+                    onCheckedChange={(checked) => setOrderField('feeExceptionApplicable', !!checked)} />
+                  <Label htmlFor="feeException" className="cursor-pointer">{t('order.feeException')}</Label>
                 </div>
                 {orderForm.feeExceptionApplicable && (
-                  <div className="space-y-2 pl-6">
-                    <Label htmlFor="exceptionFee">Exception Fee %</Label>
-                    <Input
-                      id="exceptionFee"
-                      type="number"
-                      min="0"
-                      max="100"
-                      step="0.01"
-                      placeholder="Ex: 100"
+                  <div className="space-y-2 ps-6">
+                    <Label htmlFor="exceptionFee">{t('order.exceptionFee')}</Label>
+                    <Input id="exceptionFee" type="number" min="0" max="100" step="0.01"
                       value={orderForm.exceptionFeePercent}
-                      onChange={(e) => setOrderField('exceptionFeePercent', e.target.value)}
-                    />
+                      onChange={(e) => setOrderField('exceptionFeePercent', e.target.value)} />
                   </div>
                 )}
               </div>
 
-              {/* ───── SIP / SWP Fields ───── */}
               {isSipSwp && (
                 <>
                   <Separator />
                   <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                    {orderForm.transactionType === 'sip' ? 'SIP' : 'SWP'} Settings
+                    {orderForm.transactionType === 'sip' ? t('order.sipSettings') : t('order.swpSettings')}
                   </p>
-
-                  {/* Place first order today */}
                   <div className="flex items-center gap-2">
-                    <Checkbox
-                      id="placeFirstOrder"
-                      checked={orderForm.placeFirstOrderToday}
-                      onCheckedChange={(checked) =>
-                        setOrderField('placeFirstOrderToday', !!checked)
-                      }
-                    />
-                    <Label htmlFor="placeFirstOrder" className="cursor-pointer">
-                      Place first order today
-                    </Label>
+                    <Checkbox id="placeFirstOrder" checked={orderForm.placeFirstOrderToday}
+                      onCheckedChange={(checked) => setOrderField('placeFirstOrderToday', !!checked)} />
+                    <Label htmlFor="placeFirstOrder" className="cursor-pointer">{t('order.placeFirstOrder')}</Label>
                   </div>
-
-                  {/* Start Date */}
                   <div className="space-y-2">
-                    <Label htmlFor="startDate">Start Date</Label>
-                    <Input
-                      id="startDate"
-                      type="date"
-                      value={orderForm.startDate}
-                      onChange={(e) => setOrderField('startDate', e.target.value)}
-                    />
+                    <Label htmlFor="startDate">{t('order.startDate')}</Label>
+                    <Input id="startDate" type="date" value={orderForm.startDate}
+                      onChange={(e) => setOrderField('startDate', e.target.value)} />
                   </div>
-
-                  {/* Frequency */}
                   <div className="space-y-2">
-                    <Label>Frequency</Label>
-                    <Select
-                      value={orderForm.frequency}
-                      onValueChange={(val) => setOrderField('frequency', val)}
-                    >
+                    <Label>{t('order.frequency')}</Label>
+                    <Select value={orderForm.frequency} onValueChange={(val) => setOrderField('frequency', val)}>
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select frequency" />
+                        <SelectValue placeholder={t('order.selectFrequency')} />
                       </SelectTrigger>
                       <SelectContent>
                         {FREQUENCY_OPTIONS.map((f) => (
-                          <SelectItem key={f.value} value={f.value}>
-                            {f.label}
-                          </SelectItem>
+                          <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
-
-                  {/* Tenure */}
                   <div className="space-y-2">
-                    <Label htmlFor="tenure">Tenure</Label>
-                    <Input
-                      id="tenure"
-                      type="text"
-                      placeholder="e.g. 12 months"
-                      value={orderForm.tenure}
-                      onChange={(e) => setOrderField('tenure', e.target.value)}
-                    />
+                    <Label htmlFor="tenure">{t('order.tenure')}</Label>
+                    <Input id="tenure" type="text" value={orderForm.tenure}
+                      onChange={(e) => setOrderField('tenure', e.target.value)} />
                   </div>
-
-                  {/* Number of Units & Installment Amount — mutually exclusive */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="numberOfUnits">Number of Units</Label>
-                      <Input
-                        id="numberOfUnits"
-                        type="number"
-                        min="1"
-                        step="1"
-                        placeholder="Units"
+                      <Label htmlFor="numberOfUnits">{t('order.numberOfUnits')}</Label>
+                      <Input id="numberOfUnits" type="number" min="1" step="1"
                         value={orderForm.numberOfUnits}
                         onChange={(e) => setOrderField('numberOfUnits', e.target.value)}
-                        disabled={!!orderForm.installmentAmount}
-                      />
+                        disabled={!!orderForm.installmentAmount} />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="installmentAmount">Installment Amount</Label>
-                      <Input
-                        id="installmentAmount"
-                        type="number"
-                        min="0.01"
-                        step="0.01"
-                        placeholder="Amount"
+                      <Label htmlFor="installmentAmount">{t('order.installmentAmount')}</Label>
+                      <Input id="installmentAmount" type="number" min="0.01" step="0.01"
                         value={orderForm.installmentAmount}
                         onChange={(e) => setOrderField('installmentAmount', e.target.value)}
-                        disabled={!!orderForm.numberOfUnits}
-                      />
+                        disabled={!!orderForm.numberOfUnits} />
                     </div>
                   </div>
                 </>
@@ -409,21 +301,19 @@ export default function CreateOrder() {
 
               <Separator />
 
-              {/* FX Rate */}
               {needsFx && fxRate && (
                 <div className="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-amber-800">FX Rate</span>
+                  <span className="text-xs font-semibold uppercase tracking-wider text-amber-800">{t('order.fxRate')}</span>
                   <span className="text-sm font-semibold text-amber-800">
                     1 {selectedBank.currency} = {fxRate} {selectedInstrument.currency}
                   </span>
                 </div>
               )}
 
-              {/* Total Amount summary */}
               <div className="rounded-lg border bg-muted/50 p-4 space-y-2">
                 {isLimitOrder && !isSipSwp && (
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">Effective Price</span>
+                    <span className="text-xs text-muted-foreground">{t('order.effectivePrice')}</span>
                     <span className="text-xs font-semibold">
                       {selectedInstrument.currency}{' '}
                       {effectivePrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}
@@ -431,7 +321,7 @@ export default function CreateOrder() {
                   </div>
                 )}
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Total Amount</span>
+                  <span className="text-sm text-muted-foreground">{t('order.totalAmount')}</span>
                   <span className="text-sm font-bold">
                     {selectedInstrument.currency}{' '}
                     {totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
@@ -440,7 +330,7 @@ export default function CreateOrder() {
                 {needsFx && totalInAccountCurrency && (
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-muted-foreground">
-                      Equivalent ({selectedBank.currency})
+                      {t('order.equivalent')} ({selectedBank.currency})
                     </span>
                     <span className="text-xs font-semibold text-muted-foreground">
                       {selectedBank.currency}{' '}
@@ -453,12 +343,10 @@ export default function CreateOrder() {
               <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Placing Order...
+                    <Loader2 className="me-2 h-4 w-4 animate-spin" />
+                    {t('order.placingOrder')}
                   </>
-                ) : (
-                  'Place Order'
-                )}
+                ) : t('order.placeOrder')}
               </Button>
             </form>
           </CardContent>
