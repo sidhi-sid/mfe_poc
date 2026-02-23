@@ -1,15 +1,15 @@
 /**
  * Module Federation remote types.
- * Declare remote modules so TypeScript accepts dynamic imports.
+ * Each remote exports a React component + inline CSS text for shadow isolation.
  */
 declare module 'oms/App' {
   import type { ComponentType } from 'react'
-  const App: ComponentType
-  export default App
+  export const Component: ComponentType
+  export const cssText: string
 }
 
 declare module 'dashboard/App' {
   import type { ComponentType } from 'react'
-  const App: ComponentType
-  export default App
+  export const Component: ComponentType
+  export const cssText: string
 }

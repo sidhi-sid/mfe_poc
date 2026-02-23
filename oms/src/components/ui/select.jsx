@@ -5,6 +5,7 @@ import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react"
 import { Select as SelectPrimitive } from "radix-ui"
 
 import { cn } from "@/lib/utils"
+import { useShadowPortalContainer } from "@/lib/shadow-portal"
 
 function Select({
   ...props
@@ -54,8 +55,10 @@ function SelectContent({
   align = "center",
   ...props
 }) {
+  const portalContainer = useShadowPortalContainer()
+
   return (
-    <SelectPrimitive.Portal>
+    <SelectPrimitive.Portal container={portalContainer ?? undefined}>
       <SelectPrimitive.Content
         data-slot="select-content"
         className={cn(
