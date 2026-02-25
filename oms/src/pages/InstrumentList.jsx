@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppTranslation } from '../useAppTranslation';
 import { Search, X, ArrowRight } from 'lucide-react';
@@ -30,6 +31,14 @@ export default function InstrumentList() {
   const setSearchQuery = useOmsStore((s) => s.setSearchQuery);
   const filteredInstruments = useOmsStore((s) => s.filteredInstruments);
   const selectInstrument = useOmsStore((s) => s.selectInstrument);
+  const fetchInstruments = useOmsStore((s) => s.fetchInstruments);
+  const instrumentsLoading = useOmsStore((s) => s.instrumentsLoading);
+  const instrumentsSource = useOmsStore((s) => s.instrumentsSource);
+
+  // Fetch instruments from Fastify API on mount
+  useEffect(() => {
+    fetchInstruments();
+  }, [fetchInstruments]);
 
   const instruments = filteredInstruments();
 
@@ -38,10 +47,18 @@ export default function InstrumentList() {
     navigate(`order/${instrument.id}`);
   };
 
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight">{t('search.title')}</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-bold tracking-tight">{t('search.title')}</h1>
+          {instrumentsSource === 'mock' && (
+            <span className="rounded-full border border-amber-300 bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+              Mock Data
+            </span>
+          )}
+        </div>
         <p className="mt-1 text-sm text-muted-foreground">{t('search.subtitle')}</p>
       </div>
 

@@ -49,6 +49,44 @@ npm install
 npm run dev:remote
 ```
  
+## API Servers (Fastify)
+
+Each MFE has its own Fastify backend that proxies requests to the LoopBack 3 API at `https://bm-rhel-second-staging.wealthfy.com/api/`.
+
+| Server | Port | Path | Purpose |
+|--------|------|------|---------|
+| **dashboard-api** | 4001 | `api/dashboard/` | Proxies ClientDashboard data |
+| **oms-api** | 4002 | `api/oms/` | Instruments, orders, generic LoopBack proxy |
+
+### Setup
+
+```bash
+# 1) Dashboard API
+cd api/dashboard
+npm install
+cp .env.example .env
+# Edit .env → paste your LoopBack token into LB_ACCESS_TOKEN
+npm run dev
+
+# 2) OMS API
+cd ../oms
+npm install
+cp .env.example .env
+# Edit .env → paste your LoopBack token into LB_ACCESS_TOKEN
+npm run dev
+```
+
+Get your LoopBack token by logging into BM_WEALTH_MANAGEMENT and copying it from the session.
+
+### Generic Proxy
+
+The OMS API includes a catch-all proxy at `/api/lb/*` that forwards any request to LoopBack 3:
+
+```
+GET  http://localhost:4002/api/lb/ClientDashboard/201/fetchDashboardData?fromDate=2025-01-01
+POST http://localhost:4002/api/lb/Orders
+```
+
 ## Tech Stack
  
 - **React** — UI library
