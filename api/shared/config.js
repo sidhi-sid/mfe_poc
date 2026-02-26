@@ -26,6 +26,9 @@ const config = {
     modulecode: process.env.LB_MODULE_CODE || '',
   },
 
+  /** Cloud-hosted module.json URL (MFE registry). Fetched by GET /api/modules. */
+  moduleJsonUrl: process.env.MODULE_JSON_URL || '',
+
   /** Allowed CORS origins for MFE frontends */
   corsOrigins: [
     'http://localhost:5173', // Core shell
