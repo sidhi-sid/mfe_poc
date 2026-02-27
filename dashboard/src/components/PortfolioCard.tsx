@@ -41,8 +41,12 @@ function formatPercent(value: number) {
   return `${sign}${value.toFixed(2)}%`
 }
 
-export function PortfolioCard() {
-  const { data: portfolio, loading, error, usingMock } = useDashboardData(201)
+interface PortfolioCardProps {
+  accessToken?: string | null
+}
+
+export function PortfolioCard({ accessToken }: PortfolioCardProps = {}) {
+  const { data: portfolio, loading, error, usingMock } = useDashboardData(201, accessToken)
   const { t } = useAppTranslation()
 
   if (loading) {

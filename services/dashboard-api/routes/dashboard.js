@@ -3,6 +3,8 @@
 const dashboardController = require('../controllers/dashboardController');
 
 async function dashboardRoutes(fastify) {
+  fastify.get('/onboarding/getWMURL', dashboardController.getWMURL);
+  fastify.post('/onboarding/authSelfOnboarding', dashboardController.authSelfOnboarding);
   fastify.get('/dashboard/:clientId/portfolio', dashboardController.getPortfolio);
   fastify.get('/dashboard/:clientId/bank', dashboardController.getBank);
   fastify.get('/dashboard/:clientId', dashboardController.getDashboardData);

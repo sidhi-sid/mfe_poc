@@ -92,9 +92,36 @@ async function getDashboardAction(request, reply) {
   reply.code(result.status).send(result.data);
 }
 
+async function getWMURL(request, reply) {
+  const lbPath = `Onboarding/getWMURL`;
+  const result = await proxyToLoopback({
+    method: 'GET',
+    path: lbPath,
+    token: request.lbToken,
+    query: {
+      cifNumber: request.query.cifNumber,
+      accountType: request.query.accountType,
+    },
+  });
+  reply.code(result.status).send(result.data);
+}
+
+async function authSelfOnboarding(request, reply) {
+  const lbPath = `Onboarding/authSelfOnboarding`;
+  const result = await proxyToLoopback({
+    method: 'POST',
+    path: lbPath,
+    token: request.lbToken,
+    body: request.body || {},
+  });
+  reply.code(result.status).send(result.data);
+}
+
 module.exports = {
   getPortfolio,
   getBank,
   getDashboardData,
   getDashboardAction,
+  getWMURL,
+  authSelfOnboarding,
 };

@@ -16,10 +16,14 @@ async function proxyToLoopback({ method, path, token, query, body, headers = {} 
   const fetchHeaders = {
     'Content-Type': 'application/json',
     'Accept': 'application/json, text/plain, */*',
-    'Authorization': token,
     ...config.lbHeaders,
     ...headers,
   };
+  if (token) {
+    // LoopBack 3 expects the raw token in Authorization header, not "Bearer <token>"
+    const rawToken = typeof token === 'string' && /^bearer\s+/i.test(token) ? token.replace(/^bearer\s+/i, '') : token;
+    fetchHeaders['Authorization'] = rawToken;
+  }
 
   if (config.lbCookie) {
     fetchHeaders['Cookie'] = config.lbCookie;

@@ -1,8 +1,12 @@
 import { useAppTranslation } from './useAppTranslation'
+import { useWMURL } from './hooks/useWMURL'
 import { PortfolioCard } from "@/components/PortfolioCard"
 
 export default function App() {
   const { t } = useAppTranslation()
+  const { authResponse } = useWMURL({ cifNumber: '123456', accountType: 'Individual' })
+  const accessToken = authResponse?.token ?? null
+
   return (
     <div className="max-w-3xl space-y-8">
       <header>
@@ -13,7 +17,7 @@ export default function App() {
           {t('subtitle')}
         </p>
       </header>
-      <PortfolioCard />
+      <PortfolioCard accessToken={accessToken} />
     </div>
   )
 }

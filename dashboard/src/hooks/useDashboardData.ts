@@ -6,10 +6,10 @@ const DASHBOARD_API_BASE = 'http://localhost:4001'
 
 /**
  * Hook to fetch portfolio overview data from the Fastify API.
- * Called on dashboard page load and when navigating back from OMS.
+ * Pass accessToken from authSelfOnboarding so portfolio/bank use the same session.
  * Falls back to mock data if the API is unreachable.
  */
-export function useDashboardData(clientId: number = 201) {
+export function useDashboardData(clientId: number = 201, accessToken?: string | null) {
   const [data, setData] = useState<CustomerPortfolio | null>(null)
   const [rawPortfolio, setRawPortfolio] = useState<any>(null)
   const [rawBank, setRawBank] = useState<any>(null)
@@ -18,14 +18,18 @@ export function useDashboardData(clientId: number = 201) {
   const [usingMock, setUsingMock] = useState(false)
 
   useEffect(() => {
+    if (!accessToken) return
     let cancelled = false
+
+    const headers: HeadersInit = {
+      Authorization: accessToken.startsWith('Bearer ') ? accessToken : `Bearer ${accessToken}`,
+    }
 
     async function fetchData() {
       try {
-        // Fetch both portfolio overview and bank details in parallel
         const [portfolioRes, bankRes] = await Promise.all([
-          fetch(`${DASHBOARD_API_BASE}/api/dashboard/${clientId}/portfolio?fromDate=2025-01-01&currencyId=247`),
-          fetch(`${DASHBOARD_API_BASE}/api/dashboard/${clientId}/bank?fromDate=2025-01-01&currencyId=247`),
+          fetch(`${DASHBOARD_API_BASE}/api/dashboard/${clientId}/portfolio?fromDate=2025-01-01&currencyId=247`, { headers }),
+          fetch(`${DASHBOARD_API_BASE}/api/dashboard/${clientId}/bank?fromDate=2025-01-01&currencyId=247`, { headers }),
         ])
 
         if (!portfolioRes.ok) throw new Error(`Portfolio API returned ${portfolioRes.status}`)
@@ -56,7 +60,7 @@ export function useDashboardData(clientId: number = 201) {
 
     fetchData()
     return () => { cancelled = true }
-  }, [clientId])
+  }, [clientId, accessToken])
 
   return { data, rawPortfolio, rawBank, loading, error, usingMock }
 }

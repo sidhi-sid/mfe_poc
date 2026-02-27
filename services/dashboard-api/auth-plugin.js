@@ -9,11 +9,15 @@ async function authPlugin(fastify) {
   fastify.addHook('onRequest', async (request, reply) => {
     if (request.url === '/health') return;
 
-    const token = config.lbToken;
+    const pathname = request.url.split('?')[0];
+    if (pathname === '/api/onboarding/getWMURL' || pathname === '/api/onboarding/authSelfOnboarding') return;
+
+    // Use token from request (e.g. from authSelfOnboarding) or fall back to server config
+    const token = request.headers.authorization || config.lbToken;
     if (!token) {
       reply.code(401).send({
         error: 'Unauthorized',
-        message: 'LoopBack auth token not configured. Set LB_TOKEN in your .env file.',
+        message: 'Authorization required. Send Bearer token from authSelfOnboarding or set LB_TOKEN in .env.',
       });
       return;
     }
