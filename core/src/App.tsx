@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/sidebar"
 import { useModules } from "@/hooks/useModules"
 import { FederationMFE } from "@/components/FederationMFE"
-import { Toaster } from "sonner"
 import { useMfeNotifications } from "@/hooks/useMfeNotifications"
 
 // Wrapper to handle sidebar toggle from Header

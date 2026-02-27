@@ -14,6 +14,9 @@ export interface ModuleWithAvailability extends ModuleConfig {
 
 const HEALTH_CHECK_TIMEOUT_MS = 3000;
 
+/** Endpoint on core-api that returns module config (same shape as module.json). */
+const MODULE_CONFIG_ENDPOINT = '/api/modules';
+
 async function checkModuleAvailable(moduleConfig: ModuleConfig): Promise<boolean> {
   const { baseUrl } = moduleConfig;
   if (!baseUrl || baseUrl === '' || baseUrl === window.location.origin) {
@@ -51,11 +54,18 @@ export function useModules() {
 
   useEffect(() => {
     let cancelled = false;
-
+    const baseUrl = (import.meta.env.VITE_CORE_API_BASE_URL ?? '').toString().trim();
+    const configUrl = baseUrl ? `${baseUrl.replace(/\/$/, '')}${MODULE_CONFIG_ENDPOINT}` : '';
     async function load() {
       try {
-        const res = await fetch('/module.json');
-        if (!res.ok) throw new Error('Failed to load module config');
+        if (!configUrl) {
+          if (!cancelled) {
+            setModules([]);
+            setError(new Error('VITE_CORE_API_BASE_URL is not set. Set it to your core-api base URL (e.g. http://localhost:4000).'));
+          }
+        } else {
+        const res = await fetch(configUrl);
+        if (!res.ok) throw new Error(`Failed to load module config: ${res.status}`);
         const data = await res.json();
         const list: ModuleConfig[] = data.modules ?? [];
         const withAvailability: ModuleWithAvailability[] = await Promise.all(
@@ -66,6 +76,7 @@ export function useModules() {
         );
         if (!cancelled) {
           setModules(withAvailability);
+        }
         }
       } catch (e) {
         if (!cancelled) {

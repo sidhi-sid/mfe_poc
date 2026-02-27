@@ -32,6 +32,7 @@ const FREQUENCY_OPTIONS = [
 ];
 
 export default function CreateOrder() {
+  console.log("inside create order page ==>>")
   const { instrumentId } = useParams();
   const navigate = useNavigate();
   const { t } = useAppTranslation();
@@ -39,6 +40,9 @@ export default function CreateOrder() {
   const instruments = useOmsStore((s) => s.instruments);
   const selectedInstrument = useOmsStore((s) => s.selectedInstrument);
   const selectInstrument = useOmsStore((s) => s.selectInstrument);
+  const fetchInstrumentById = useOmsStore((s) => s.fetchInstrumentById);
+  const instrumentDetailLoading = useOmsStore((s) => s.instrumentDetailLoading);
+  const instrumentDetailError = useOmsStore((s) => s.instrumentDetailError);
   const bankAccounts = useOmsStore((s) => s.bankAccounts);
   const orderForm = useOmsStore((s) => s.orderForm);
   const setOrderField = useOmsStore((s) => s.setOrderField);
@@ -54,13 +58,29 @@ export default function CreateOrder() {
   const isSubmitting = useOmsStore((s) => s.isSubmitting);
 
   useEffect(() => {
-    if (!selectedInstrument) {
-      const found = instruments.find((i) => i.id === instrumentId);
-      if (found) selectInstrument(found);
-      else navigate('..');
-    }
-  }, [instrumentId, selectedInstrument, instruments, selectInstrument, navigate]);
+    // console.log("inside useEffect ", instrumentId)
+    if (!instrumentId) return;
+    // console.log("selectedInstrument ==>> ", selectedInstrument);
+    // if (selectedInstrument?.id === instrumentId) return;
+    fetchInstrumentById(instrumentId).catch(() => navigate('..'));
+  }, [instrumentId, selectedInstrument?.id, fetchInstrumentById, navigate]);
 
+  if (instrumentDetailLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[200px] gap-2">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <span className="text-muted-foreground">Loading instrument…</span>
+      </div>
+    );
+  }
+  if (instrumentDetailError && !selectedInstrument) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[200px] gap-2">
+        <p className="text-destructive">{instrumentDetailError}</p>
+        <Button variant="outline" onClick={() => navigate('..')}>Back to Instruments</Button>
+      </div>
+    );
+  }
   if (!selectedInstrument) return null;
 
   const fxRate = getFxRate();

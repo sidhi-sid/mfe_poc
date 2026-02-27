@@ -43,6 +43,7 @@ export default function InstrumentList() {
   const instruments = filteredInstruments();
 
   const handleSelect = (instrument) => {
+    console.log("instrument ==>> ", instrument);
     selectInstrument(instrument);
     navigate(`order/${instrument.id}`);
   };

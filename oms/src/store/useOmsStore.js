@@ -76,6 +76,33 @@ const useOmsStore = create((set, get) => ({
     }
   },
 
+  /**
+   * Fetch a single instrument by ID from the OMS API.
+   * Used when opening Create Order by URL (e.g. /order/INS002) so the request hits GET /api/instruments/:id.
+   */
+  instrumentDetailLoading: false,
+  instrumentDetailError: null,
+  fetchInstrumentById: async (id) => {
+    console.log("fetchInstrumentById getting called ==>> ", id);
+    set({ instrumentDetailLoading: true, instrumentDetailError: null });
+    try {
+      const res = await fetch(`${OMS_API_BASE}/api/instruments/${id}`);
+      if (!res.ok) {
+        if (res.status === 404) throw new Error(`Instrument ${id} not found`);
+        throw new Error(`API returned ${res.status}`);
+      }
+      const data = await res.json();
+      set({ selectedInstrument: data, instrumentDetailLoading: false });
+      return data;
+    } catch (err) {
+      set({
+        instrumentDetailError: err.message || 'Failed to load instrument',
+        instrumentDetailLoading: false,
+      });
+      throw err;
+    }
+  },
+
   selectedInstrument: null,
   selectInstrument: (instrument) => set({ selectedInstrument: instrument }),
   clearSelectedInstrument: () => set({ selectedInstrument: null }),
