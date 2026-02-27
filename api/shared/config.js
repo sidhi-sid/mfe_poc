@@ -1,9 +1,17 @@
 /**
  * Shared configuration for all Fastify API servers.
  * Reads from environment variables (loaded via dotenv in each server).
+ *
+ * @module @mfe/shared/config
  */
 
 const config = {
+  /** Log level for pino logger */
+  logLevel: process.env.LOG_LEVEL || 'info',
+
+  /** Node environment */
+  nodeEnv: process.env.NODE_ENV || 'development',
+
   /** LoopBack 3 API base URL (no trailing slash) */
   lbBaseUrl: process.env.LB_BASE_URL || 'https://bm-rhel-second-staging.wealthfy.com/api',
 

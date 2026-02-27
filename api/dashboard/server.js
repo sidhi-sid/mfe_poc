@@ -1,38 +1,25 @@
 'use strict';
 
+/**
+ * Dashboard Microservice — Server Entry Point
+ *
+ * Loads environment, builds the app, starts listening, and registers shutdown handlers.
+ */
+
 require('dotenv').config();
 
-const fastify = require('fastify')({ logger: true });
-const cors = require('@fastify/cors');
-const config = require('../shared/config');
-const authPlugin = require('../shared/auth-plugin');
-const dashboardRoutes = require('./routes/dashboard');
+const { buildApp } = require('./app');
+const { registerGracefulShutdown } = require('@mfe/shared');
 
 async function start() {
-  // CORS — allow MFE origins
-  await fastify.register(cors, {
-    origin: config.corsOrigins,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    credentials: true,
-  });
+  const fastify = await buildApp();
 
-  // Auth plugin — adds lbToken to every request
-  await fastify.register(authPlugin);
-
-  // Health check
-  fastify.get('/health', async () => ({
-    status: 'ok',
-    service: 'dashboard-api',
-    timestamp: new Date().toISOString(),
-  }));
-
-  // Dashboard routes
-  await fastify.register(dashboardRoutes, { prefix: '/api' });
-
-  // Start server
   const port = process.env.PORT || 4001;
   await fastify.listen({ port, host: '0.0.0.0' });
   fastify.log.info(`Dashboard API running on http://localhost:${port}`);
+
+  // Graceful shutdown on SIGTERM/SIGINT
+  registerGracefulShutdown(fastify, fastify.log);
 }
 
 start().catch((err) => {

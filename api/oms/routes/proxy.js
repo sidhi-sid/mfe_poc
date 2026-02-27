@@ -1,6 +1,6 @@
 'use strict';
 
-const { proxyToLoopback } = require('../../shared/lb-proxy');
+const { proxyToLoopback } = require('@mfe/shared');
 
 /**
  * Generic LoopBack 3 proxy routes.

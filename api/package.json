@@ -1,0 +1,19 @@
+{
+  "name": "mfe-api",
+  "private": true,
+  "version": "1.0.0",
+  "description": "MFE Backend Microservices — OMS, Dashboard, and Shared",
+  "workspaces": [
+    "shared",
+    "oms",
+    "dashboard"
+  ],
+  "scripts": {
+    "dev:oms": "npm run dev --workspace=oms",
+    "dev:dashboard": "npm run dev --workspace=dashboard",
+    "dev:all": "npm run dev:oms & npm run dev:dashboard",
+    "start:oms": "npm run start --workspace=oms",
+    "start:dashboard": "npm run start --workspace=dashboard",
+    "install:all": "npm install"
+  }
+}

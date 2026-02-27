@@ -1,10 +1,11 @@
 'use strict';
 
-const { proxyToLoopback } = require('../../shared/lb-proxy');
+const dashboardService = require('../services/dashboard');
 
 /**
  * Dashboard routes.
  * Proxies dashboard data requests to the LoopBack 3 ClientDashboard API.
+ * Business logic delegated to services/dashboard.js.
  */
 async function dashboardRoutes(fastify) {
   /**
@@ -16,27 +17,11 @@ async function dashboardRoutes(fastify) {
    */
   fastify.get('/dashboard/:clientId/portfolio', async (request, reply) => {
     const { clientId } = request.params;
-    const { fromDate, currencyId, contextFilter } = request.query;
 
-    const lbPath = `ClientDashboard/${clientId}/fetchDashboardData`;
-
-    const widgetsToInclude = JSON.stringify({
-      portfolioSeries: {},
-      portfolioSummary: {},
-      timedTransactions: {},
-      portfolioNetValue: {},
-    });
-
-    const result = await proxyToLoopback({
-      method: 'GET',
-      path: lbPath,
+    const result = await dashboardService.fetchPortfolio({
+      clientId,
       token: request.lbToken,
-      query: {
-        fromDate: fromDate || '2025-01-01',
-        currencyId: currencyId || '247',
-        contextFilter: contextFilter || JSON.stringify({ custodialAccountId: [1] }),
-        widgetsToInclude,
-      },
+      query: request.query,
     });
 
     reply.code(result.status).send(result.data);
@@ -51,31 +36,11 @@ async function dashboardRoutes(fastify) {
    */
   fastify.get('/dashboard/:clientId/bank', async (request, reply) => {
     const { clientId } = request.params;
-    const { fromDate, currencyId, contextFilter } = request.query;
 
-    const lbPath = `ClientDashboard/${clientId}/fetchDashboardData`;
-
-    const widgetsToInclude = JSON.stringify({
-      bankDetails: {
-        filters: {
-          accountId: [parseInt(clientId)],
-          currencyId: parseInt(currencyId) || 247,
-          offset: 0,
-          limit: 5,
-        },
-      },
-    });
-
-    const result = await proxyToLoopback({
-      method: 'GET',
-      path: lbPath,
+    const result = await dashboardService.fetchBankDetails({
+      clientId,
       token: request.lbToken,
-      query: {
-        fromDate: fromDate || '2025-01-01',
-        currencyId: currencyId || '247',
-        contextFilter: contextFilter || JSON.stringify({ custodialAccountId: [1] }),
-        widgetsToInclude,
-      },
+      query: request.query,
     });
 
     reply.code(result.status).send(result.data);
@@ -89,11 +54,9 @@ async function dashboardRoutes(fastify) {
    */
   fastify.get('/dashboard/:clientId', async (request, reply) => {
     const { clientId } = request.params;
-    const lbPath = `ClientDashboard/${clientId}/fetchDashboardData`;
 
-    const result = await proxyToLoopback({
-      method: 'GET',
-      path: lbPath,
+    const result = await dashboardService.fetchDashboardData({
+      clientId,
       token: request.lbToken,
       query: request.query,
     });
@@ -112,11 +75,9 @@ async function dashboardRoutes(fastify) {
     // Don't match our named routes
     if (action === 'portfolio' || action === 'bank') return;
 
-    const lbPath = `ClientDashboard/${clientId}/${action}`;
-
-    const result = await proxyToLoopback({
-      method: 'GET',
-      path: lbPath,
+    const result = await dashboardService.fetchClientAction({
+      clientId,
+      action,
       token: request.lbToken,
       query: request.query,
     });

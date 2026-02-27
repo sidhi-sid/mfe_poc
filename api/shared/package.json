@@ -1,8 +1,19 @@
 {
-  "name": "api-shared",
+  "name": "@mfe/shared",
   "private": true,
   "version": "1.0.0",
   "type": "commonjs",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./config": "./config.js",
+    "./auth-plugin": "./auth-plugin.js",
+    "./lb-proxy": "./lb-proxy.js",
+    "./logger": "./logger.js",
+    "./errors": "./errors.js",
+    "./graceful-shutdown": "./graceful-shutdown.js",
+    "./middleware/*": "./middleware/*.js"
+  },
   "dependencies": {
     "dotenv": "^16.5.0",
     "fastify-plugin": "^5.0.0"
