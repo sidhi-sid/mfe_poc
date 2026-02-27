@@ -1,117 +1,122 @@
 # Onboarding & Auth Flow – Summary of Changes
 
-This document lists all code changes made to implement the getWMURL → authSelfOnboarding flow and to use the resulting token for dashboard API calls (portfolio, bank).
+This document lists all changes made to implement the getWMURL and authSelfOnboarding proxy flow, use the auth token for dashboard APIs, and fix LoopBack token format.
 
 ---
 
-## 1. Dashboard API (Fastify) – New Onboarding Endpoints
+## 1. Dashboard API (Fastify) – New Onboarding Routes
 
-### 1.1 Routes (`services/dashboard-api/routes/dashboard.js`)
+### 1.1 Route: GET `/api/onboarding/getWMURL`
 
-- **GET `/api/onboarding/getWMURL`**  
-  - Proxies to hosted LoopBack `Onboarding/getWMURL`.  
-  - Query: `cifNumber`, `accountType` (Individual | Joint | Corporate).
+**File:** `mfe_poc/services/dashboard-api/routes/dashboard.js`
 
-- **POST `/api/onboarding/authSelfOnboarding`**  
-  - Proxies to hosted LoopBack `Onboarding/authSelfOnboarding`.  
-  - Body: `{ sessionId, bwayparam, param, device?, token? }`.
+- Added: `fastify.get('/onboarding/getWMURL', dashboardController.getWMURL);`
+- Purpose: Proxy to hosted LoopBack `Onboarding/getWMURL` to get the Wealth Management URL.
 
-### 1.2 Controller (`services/dashboard-api/controllers/dashboardController.js`)
+**File:** `mfe_poc/services/dashboard-api/controllers/dashboardController.js`
 
-- **`getWMURL(request, reply)`**  
-  - Proxies GET to `Onboarding/getWMURL` with `query: { cifNumber, accountType }` from request query.  
-  - Returns `reply.code(result.status).send(result.data)`.
-
-- **`authSelfOnboarding(request, reply)`**  
-  - Proxies POST to `Onboarding/authSelfOnboarding` with `body: request.body || {}`.  
-  - Returns `reply.code(result.status).send(result.data)`.
+- Added `getWMURL(request, reply)`:
+  - Proxies `GET` to `Onboarding/getWMURL`.
+  - Forwards query params: `cifNumber`, `accountType`.
+  - Returns hosted response (e.g. `{ url: "?uniqueId=...&bwayparam=...&param=..." }`).
 
 ---
 
-## 2. Dashboard API – Auth and Proxy Behavior
+### 1.2 Route: POST `/api/onboarding/authSelfOnboarding`
 
-### 2.1 Auth plugin (`services/dashboard-api/auth-plugin.js`)
+**File:** `mfe_poc/services/dashboard-api/routes/dashboard.js`
 
-- **Paths excluded from token check**  
-  - `/api/onboarding/getWMURL` and `/api/onboarding/authSelfOnboarding` do not require a token (no LB_TOKEN needed to call them).
+- Added: `fastify.post('/onboarding/authSelfOnboarding', dashboardController.authSelfOnboarding);`
 
-- **Token source**  
-  - `request.lbToken` is set from **request first**, then config:  
-    `token = request.headers.authorization || config.lbToken`  
-  - So when the frontend sends `Authorization: Bearer <token>` (from authSelfOnboarding), that token is used for subsequent proxied calls (e.g. portfolio, bank).  
-  - 401 is returned only when **both** the `Authorization` header and `LB_TOKEN` in config are missing.
+**File:** `mfe_poc/services/dashboard-api/controllers/dashboardController.js`
 
-### 2.2 LoopBack proxy (`services/dashboard-api/lb-proxy.js`)
-
-- **Authorization header**  
-  - Set only when `token` is truthy (no `Authorization: null` for unauthenticated routes).
-
-- **LoopBack 3 token format**  
-  - LoopBack 3 expects the **raw token** in the `Authorization` header, not `Bearer <token>`.  
-  - Before forwarding to LoopBack, the proxy strips a leading `Bearer ` (case-insensitive) from the token.  
-  - Example: client sends `Authorization: Bearer abc123` → proxy sends `Authorization: abc123` to the hosted API.
+- Added `authSelfOnboarding(request, reply)`:
+  - Proxies `POST` to `Onboarding/authSelfOnboarding`.
+  - Forwards request body as-is (e.g. `sessionId`, `bwayparam`, `param`, `device`, `token`).
+  - Returns hosted response (e.g. `existing`, `active`, `token`, `cif`, `cbsResponse`, etc.).
 
 ---
 
-## 3. Dashboard Frontend – Onboarding and Token Usage
+## 2. Dashboard API – Auth Plugin (Onboarding Excluded)
 
-### 3.1 Hook: `useWMURL` (`dashboard/src/hooks/useWMURL.ts`)
+**File:** `mfe_poc/services/dashboard-api/auth-plugin.js`
 
-- **Purpose**  
-  - On dashboard init: call getWMURL, then call authSelfOnboarding with the parsed URL params.
-
-- **Flow**  
-  1. GET `/api/onboarding/getWMURL?cifNumber=...&accountType=...`  
-  2. Parse response `url` (`?uniqueId=...&bwayparam=...&param=...`) into `{ sessionId, bwayparam, param }` (uniqueId → sessionId).  
-  3. POST `/api/onboarding/authSelfOnboarding` with body `{ sessionId, bwayparam, param, device: 'web' }`.  
-  4. Store both `wmUrlResponse` and `authResponse` in state.
-
-- **Exports**  
-  - `useWMURL(options?)` with `cifNumber`, `accountType` (defaults: `'201'`, `'Individual'`).  
-  - Return: `{ wmUrlResponse, wmUrl, authResponse, loading, error }`.  
-  - Types: `WMURLResponse`, `UseWMURLOptions`, `AuthSelfOnboardingResponse` (includes `token`).
-
-- **Helper**  
-  - `parseWMUrlToAuthParams(url)` – parses getWMURL `url` into authSelfOnboarding body params.
-
-### 3.2 Hook: `useDashboardData` (`dashboard/src/hooks/useDashboardData.ts`)
-
-- **New parameter**  
-  - `useDashboardData(clientId = 201, accessToken?: string | null)`  
-  - When `accessToken` is provided, all portfolio and bank `fetch` calls include:  
-    `Authorization: accessToken.startsWith('Bearer ') ? accessToken : \`Bearer ${accessToken}\``
-
-- **Behavior**  
-  - Effect runs only when `accessToken` is truthy (no portfolio/bank request until token is available).  
-  - Dependency array includes `accessToken` so when token is set after authSelfOnboarding, requests are sent with it.
-
-### 3.3 App (`dashboard/src/App.tsx`)
-
-- Calls `useWMURL({ cifNumber: '123456', accountType: 'Individual' })` on init.
-- Reads `accessToken = authResponse?.token ?? null` and passes it to `PortfolioCard`:  
-  `<PortfolioCard accessToken={accessToken} />`.
-
-### 3.4 PortfolioCard (`dashboard/src/components/PortfolioCard.tsx`)
-
-- **New prop**  
-  - `accessToken?: string | null` (optional).
-
-- **Usage**  
-  - Passes `accessToken` into `useDashboardData(201, accessToken)` so portfolio and bank requests use the authSelfOnboarding token.
+- Excluded onboarding routes from LB_TOKEN requirement so they can be called without a server-side token:
+  - `/api/onboarding/getWMURL`
+  - `/api/onboarding/authSelfOnboarding`
+- Logic: if `pathname` is one of these, the hook returns early and does not require `config.lbToken` or set `request.lbToken`.
 
 ---
 
-## 4. End-to-end flow
+## 3. Dashboard API – Use Request Token When Present
 
-1. Dashboard loads → `App` runs `useWMURL` → getWMURL → authSelfOnboarding → `authResponse` (with `token`) is set.  
-2. `App` passes `authResponse.token` to `PortfolioCard` as `accessToken`.  
-3. `useDashboardData(201, accessToken)` runs when `accessToken` is set and sends portfolio and bank requests with `Authorization: Bearer <token>`.  
-4. Dashboard-api auth plugin uses `request.headers.authorization` as `request.lbToken`.  
-5. lb-proxy strips `Bearer ` and forwards the raw token to LoopBack so portfolio/bank use the same session and no longer return “Your previous session has expired!”.
+**File:** `mfe_poc/services/dashboard-api/auth-plugin.js`
+
+- Token source: use **request token first**, then config:
+  - `const token = request.headers.authorization || config.lbToken;`
+- 401 only when **both** are missing.
+- Message updated to: *"Authorization required. Send Bearer token from authSelfOnboarding or set LB_TOKEN in .env."*
+- Effect: Portfolio/bank (and other protected) routes can use the token sent by the client (from authSelfOnboarding) instead of only `LB_TOKEN`.
 
 ---
 
-## 5. Files touched
+## 4. Dashboard API – LB Proxy: Optional Authorization & LoopBack Token Format
+
+**File:** `mfe_poc/services/dashboard-api/lb-proxy.js`
+
+- **Optional Authorization:** Only set `Authorization` header when `token` is truthy (avoids sending `Authorization: null` for unauthenticated calls like getWMURL).
+- **LoopBack 3 token format:** LoopBack expects the **raw token** in the `Authorization` header, not `Bearer <token>`. Before forwarding to the hosted API, the proxy strips a leading `"Bearer "` (case-insensitive) from the token so the backend receives only the token string.
+
+---
+
+## 5. Dashboard Frontend – useWMURL Hook
+
+**File:** `mfe_poc/dashboard/src/hooks/useWMURL.ts` (new)
+
+- **getWMURL:** Calls `GET /api/onboarding/getWMURL?cifNumber=...&accountType=...`.
+- **Parse URL:** Parses the response `url` (`?uniqueId=...&bwayparam=...&param=...`) into `{ sessionId, bwayparam, param }` (using `uniqueId` as `sessionId`).
+- **authSelfOnboarding:** After getWMURL succeeds, calls `POST /api/onboarding/authSelfOnboarding` with body `{ sessionId, bwayparam, param, device: 'web' }`.
+- **Return value:** `wmUrlResponse`, `wmUrl`, `authResponse`, `loading`, `error`.
+- **Types:** `WMURLResponse`, `UseWMURLOptions`, `AuthSelfOnboardingResponse` (includes `token`, `existing`, `active`, `cif`, etc.).
+
+---
+
+## 6. Dashboard Frontend – Call Onboarding on Init & Pass Token to Dashboard APIs
+
+**File:** `mfe_poc/dashboard/src/App.tsx`
+
+- Calls `useWMURL({ cifNumber: '123456', accountType: 'Individual' })` on dashboard init.
+- Reads `authResponse?.token` and passes it to `PortfolioCard` as `accessToken`.
+
+**File:** `mfe_poc/dashboard/src/components/PortfolioCard.tsx`
+
+- Added optional prop: `accessToken?: string | null`.
+- Passes `accessToken` into `useDashboardData(201, accessToken)`.
+
+**File:** `mfe_poc/dashboard/src/hooks/useDashboardData.ts`
+
+- **Second parameter:** `useDashboardData(clientId, accessToken?)`.
+- When `accessToken` is provided:
+  - Sends `Authorization: Bearer <token>` (or the token as-is if it already starts with `Bearer `) on portfolio and bank `fetch` requests.
+  - Only runs the fetch effect when `accessToken` is present (waits for auth before calling portfolio/bank).
+- Dependency array updated to `[clientId, accessToken]`.
+
+---
+
+## 7. End-to-End Flow (After All Changes)
+
+1. **Dashboard loads** → `useWMURL` runs in `App`.
+2. **getWMURL** → Dashboard-api proxies to hosted `Onboarding/getWMURL` (no auth required).
+3. **authSelfOnboarding** → Dashboard-api proxies to hosted `Onboarding/authSelfOnboarding` with parsed URL params (no auth required).
+4. **Hosted API** returns `{ token, existing, active, cif, cbsResponse, ... }`.
+5. **App** passes `authResponse.token` to `PortfolioCard` as `accessToken`.
+6. **Portfolio/bank requests** → `useDashboardData` sends `Authorization: Bearer <token>` to dashboard-api.
+7. **Dashboard-api** uses `request.headers.authorization` as `request.lbToken` and forwards to LoopBack.
+8. **lb-proxy** strips `"Bearer "` and sends raw token in `Authorization` to LoopBack so portfolio/bank succeed instead of returning “Your previous session has expired!”.
+
+---
+
+## 8. Files Touched (Checklist)
 
 | Area              | File(s) |
 |-------------------|--------|
@@ -126,27 +131,20 @@ This document lists all code changes made to implement the getWMURL → authSelf
 
 ---
 
-## 6. How to test
+## 9. How to Test
 
-1. **getWMURL (no auth)**  
-   ```bash
-   curl "http://localhost:4001/api/onboarding/getWMURL?cifNumber=123456&accountType=Individual"
-   ```  
-   Expect: `{ "url": "?uniqueId=...&bwayparam=...&param=..." }`.
+- **getWMURL:**  
+  `GET http://localhost:4001/api/onboarding/getWMURL?cifNumber=123456&accountType=Individual`  
+  (no `Authorization` header required.)
 
-2. **authSelfOnboarding (no auth)**  
-   ```bash
-   curl -X POST http://localhost:4001/api/onboarding/authSelfOnboarding \
-     -H "Content-Type: application/json" \
-     -d '{"sessionId":"<uniqueId>","bwayparam":"...","param":"...","device":"web"}'
-   ```  
-   Expect: JSON with `token`, `existing`, `active`, `cif`, etc.
+- **authSelfOnboarding:**  
+  `POST http://localhost:4001/api/onboarding/authSelfOnboarding`  
+  Body: `{ "sessionId": "<uniqueId from getWMURL>", "bwayparam": "...", "param": "...", "device": "web" }`  
+  (no `Authorization` header required.)
 
-3. **Portfolio/Bank with token**  
-   Use the dashboard app: it will call getWMURL → authSelfOnboarding, then use the returned token for portfolio and bank.  
-   Or manually:  
-   ```bash
-   curl -H "Authorization: Bearer <token_from_authSelfOnboarding>" \
-     "http://localhost:4001/api/dashboard/201/portfolio?fromDate=2025-01-01&currencyId=247"
-   ```  
-   Expect: 200 and portfolio data (no “session expired” 401).
+- **Portfolio/Bank (with token):**  
+  `GET http://localhost:4001/api/dashboard/201/portfolio?fromDate=2025-01-01&currencyId=247`  
+  Header: `Authorization: Bearer <token from authSelfOnboarding>`  
+  (or raw token; proxy will strip `Bearer ` when sending to LoopBack.)
+
+- **Full flow:** Load the dashboard app; it should call getWMURL → authSelfOnboarding, then load portfolio and bank using the returned token without 401.
