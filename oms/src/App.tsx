@@ -15,7 +15,7 @@ export function OmsRoutes() {
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/oms">
       <OmsRoutes />
     </BrowserRouter>
   );

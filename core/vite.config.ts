@@ -4,26 +4,10 @@ import tailwindcss from '@tailwindcss/vite'
 import federation from '@originjs/vite-plugin-federation'
 import path from "path"
 import { fileURLToPath } from "url"
-import { readFileSync } from "fs"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-// Derive federation remotes from module.json (single source of truth)
-const moduleJsonPath = path.resolve(__dirname, "public", "module.json")
-const moduleJson = JSON.parse(readFileSync(moduleJsonPath, "utf-8")) as {
-  modules: Array<{ id: string; baseUrl: string }>
-}
-const federationRemotes: Record<string, string> = {}
-for (const m of moduleJson.modules ?? []) {
-  if (m.baseUrl && m.baseUrl.trim() !== "") {
-    const base = m.baseUrl.replace(/\/$/, "")
-    // Plugin emits remoteEntry.js under build.assetsDir (default "assets")
-    federationRemotes[m.id] = `${base}/assets/remoteEntry.js`
-  }
-}
-
-// https://vite.dev/config/
 export default defineConfig({
   server: { strictPort: true, port: 5173 },
   plugins: [
@@ -35,7 +19,7 @@ export default defineConfig({
     tailwindcss(),
     federation({
       name: 'core',
-      remotes: federationRemotes,
+      remotes: {},
       shared: {
         react: { requiredVersion: '^19.0.0' },
         'react-dom': { requiredVersion: '^19.0.0' },

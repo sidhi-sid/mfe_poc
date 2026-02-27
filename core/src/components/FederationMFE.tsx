@@ -1,47 +1,40 @@
-import React, { Suspense, lazy } from 'react'
 import type { ModuleWithAvailability } from '@/hooks/useModules'
-
-// Lazy-loaded federated apps. Keys must match module.json "id" for modules that use
-// federation (have baseUrl). Core vite.config builds remotes from module.json; add
-// a new lazy import + entry here when you add a new MFE to module.json.
-const OMSApp = lazy(() => import('oms/App'))
-const DashboardApp = lazy(() => import('dashboard/App'))
-
-const REMOTE_APPS: Record<string, React.LazyExoticComponent<React.ComponentType>> = {
-  oms: OMSApp,
-  dashboard: DashboardApp,
-}
+import { useMemo } from 'react'
 
 interface FederationMFEProps {
   module: ModuleWithAvailability
 }
 
-function FederatedFallback() {
-  return (
-    <div className="flex min-h-[200px] items-center justify-center text-muted-foreground">
-      Loading remote app…
-    </div>
-  )
-}
-
-/**
- * Renders a remote MFE via Module Federation (same page, shared React).
- * Only use for modules that are exposed as federation remotes.
- */
 export function FederationMFE({ module }: FederationMFEProps) {
-  const RemoteApp = REMOTE_APPS[module.id]
+  const src = useMemo(() => {
+    console.log("module ==>> ", module);
+    const base = (module.baseUrl ?? '').toString().trim()
+    const path = module.path || '/'
 
-  if (!RemoteApp) {
+    if (!base) {
+      // If no baseUrl, assume the module is served under the same origin.
+      return path
+    }
+
+    const normalizedBase = base.replace(/\/$/, '')
+    return `${normalizedBase}${path}`
+  }, [module.baseUrl, module.path])
+
+  if (!src) {
     return (
       <p className="text-muted-foreground">
-        Unknown module: {module.id}. Add it to REMOTE_APPS in FederationMFE.
+        Unable to resolve URL for module: {module.id}. Check its configuration.
       </p>
     )
   }
 
   return (
-    <Suspense fallback={<FederatedFallback />}>
-      <RemoteApp />
-    </Suspense>
+    <div className="w-full h-full min-h-[200px]">
+      <iframe
+        src={src}
+        title={module.label ?? module.id}
+        className="w-full h-full border-0"
+      />
+    </div>
   )
 }
