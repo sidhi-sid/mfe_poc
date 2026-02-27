@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom"
 import { I18nextProvider } from "react-i18next"
+import { Toaster } from "sonner"
 import coreI18n from "./i18n"
 import AppSidebar from "@/components/app-sidebar"
 import Header from "@/components/header"
@@ -63,6 +64,7 @@ export default function App() {
           <AppSidebar />
           <AppLayout />
         </SidebarProvider>
+        <Toaster richColors position="top-right" />
       </BrowserRouter>
     </I18nextProvider>
   )

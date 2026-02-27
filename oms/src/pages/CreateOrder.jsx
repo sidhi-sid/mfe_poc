@@ -32,7 +32,6 @@ const FREQUENCY_OPTIONS = [
 ];
 
 export default function CreateOrder() {
-  console.log("inside create order page ==>>")
   const { instrumentId } = useParams();
   const navigate = useNavigate();
   const { t } = useAppTranslation();

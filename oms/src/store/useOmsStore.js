@@ -247,10 +247,9 @@ const useOmsStore = create((set, get) => ({
             : {}),
         }),
       });
-
+      console.log("res ==>> ", res);
       const data = await res.json();
       const txLabel = orderForm.transactionType.toUpperCase();
-
       if (res.ok && data.status === 'success') {
         dispatchNotification({
           type: 'success',
