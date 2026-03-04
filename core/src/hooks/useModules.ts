@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
 export interface ModuleConfig {
   id: string;
@@ -47,54 +47,44 @@ async function checkModuleAvailable(moduleConfig: ModuleConfig): Promise<boolean
   }
 }
 
+async function loadModules(): Promise<ModuleWithAvailability[]> {
+  const baseUrl = (import.meta.env.VITE_CORE_API_BASE_URL ?? '').toString().trim();
+  const configUrl = baseUrl ? `${baseUrl.replace(/\/$/, '')}${MODULE_CONFIG_ENDPOINT}` : '';
+
+  if (!configUrl) {
+    throw new Error('VITE_CORE_API_BASE_URL is not set. Set it to your core-api base URL (e.g. http://localhost:4000).');
+  }
+
+  const res = await fetch(configUrl);
+  if (!res.ok) throw new Error(`Failed to load module config: ${res.status}`);
+  const data = await res.json();
+  const list: ModuleConfig[] = data.modules ?? [];
+  const withAvailability: ModuleWithAvailability[] = await Promise.all(
+    list.map(async (m) => ({
+      ...m,
+      available: await checkModuleAvailable(m),
+    }))
+  );
+  return withAvailability;
+}
+
 export function useModules() {
-  const [modules, setModules] = useState<ModuleWithAvailability[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const query = useQuery({
+    queryKey: ['modules'],
+    queryFn: loadModules,
+  });
 
-  useEffect(() => {
-    let cancelled = false;
-    const baseUrl = (import.meta.env.VITE_CORE_API_BASE_URL ?? '').toString().trim();
-    const configUrl = baseUrl ? `${baseUrl.replace(/\/$/, '')}${MODULE_CONFIG_ENDPOINT}` : '';
-    async function load() {
-      try {
-        if (!configUrl) {
-          if (!cancelled) {
-            setModules([]);
-            setError(new Error('VITE_CORE_API_BASE_URL is not set. Set it to your core-api base URL (e.g. http://localhost:4000).'));
-          }
-        } else {
-        const res = await fetch(configUrl);
-        if (!res.ok) throw new Error(`Failed to load module config: ${res.status}`);
-        const data = await res.json();
-        const list: ModuleConfig[] = data.modules ?? [];
-        const withAvailability: ModuleWithAvailability[] = await Promise.all(
-          list.map(async (m) => ({
-            ...m,
-            available: await checkModuleAvailable(m),
-          }))
-        );
-        if (!cancelled) {
-          setModules(withAvailability);
-        }
-        }
-      } catch (e) {
-        if (!cancelled) {
-          setError(e instanceof Error ? e : new Error('Unknown error'));
-          setModules([]);
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
+  const modules = (query.data ?? []) as ModuleWithAvailability[];
   const availableModules = modules.filter((m) => m.available);
+  const error =
+    query.error != null
+      ? (query.error instanceof Error ? query.error : new Error('Unknown error'))
+      : null;
 
-  return { modules, availableModules, loading, error };
+  return {
+    modules,
+    availableModules,
+    loading: query.isPending,
+    error,
+  };
 }

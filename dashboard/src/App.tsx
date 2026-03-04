@@ -1,8 +1,19 @@
 import { useAppTranslation } from './useAppTranslation'
 import { useWMURL } from './hooks/useWMURL'
-import { PortfolioCard } from "@/components/PortfolioCard"
+import { PortfolioCard } from '@/components/PortfolioCard'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
-export default function App() {
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5,
+      gcTime: 1000 * 60 * 30,
+    },
+  },
+})
+
+/** Inner app that uses TanStack Query hooks; must be rendered inside QueryClientProvider. */
+function DashboardContent() {
   const { t } = useAppTranslation()
   const { authResponse } = useWMURL({ cifNumber: '123456', accountType: 'Individual' })
   const accessToken = authResponse?.token ?? null
@@ -19,5 +30,13 @@ export default function App() {
       </header>
       <PortfolioCard accessToken={accessToken} />
     </div>
+  )
+}
+
+export default function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <DashboardContent />
+    </QueryClientProvider>
   )
 }

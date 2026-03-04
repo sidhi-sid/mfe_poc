@@ -1,10 +1,8 @@
 import { create } from 'zustand';
-import instrumentsData from '../data/instruments';
 import bankAccountsData from '../data/bankAccounts';
 import { getRate } from '../data/fxRates';
 import { dispatchNotification } from '../utils/eventDispatcher';
-
-const OMS_API_BASE = 'http://localhost:4002';
+import { submitOrder as apiSubmitOrder } from '@/api/client';
 
 const INITIAL_ORDER_FORM = {
   bankAccountId: '',
@@ -16,7 +14,6 @@ const INITIAL_ORDER_FORM = {
   limitPrice: '',
   feeExceptionApplicable: false,
   exceptionFeePercent: '',
-  // SIP/SWP fields
   placeFirstOrderToday: false,
   startDate: '',
   frequency: '',
@@ -26,82 +23,10 @@ const INITIAL_ORDER_FORM = {
 };
 
 const useOmsStore = create((set, get) => ({
-  // Instruments — start with local mock, replaced by API data when available
-  instruments: instrumentsData,
-  instrumentsLoading: false,
-  instrumentsError: null,
-  instrumentsSource: 'mock', // 'mock' | 'api'
-
   bankAccounts: bankAccountsData,
 
   searchQuery: '',
   setSearchQuery: (query) => set({ searchQuery: query }),
-
-  filteredInstruments: () => {
-    const { instruments, searchQuery } = get();
-    if (!searchQuery.trim()) return instruments;
-    const q = searchQuery.toLowerCase();
-    return instruments.filter(
-      (ins) =>
-        ins.name.toLowerCase().includes(q) ||
-        ins.ticker.toLowerCase().includes(q) ||
-        ins.assetType.toLowerCase().includes(q) ||
-        ins.subAssetType.toLowerCase().includes(q)
-    );
-  },
-
-  /**
-   * Fetch instruments from the Fastify OMS API.
-   * Falls back to local mock data if the API is unreachable.
-   */
-  fetchInstruments: async () => {
-    set({ instrumentsLoading: true, instrumentsError: null });
-    try {
-      const res = await fetch(`${OMS_API_BASE}/api/instruments`);
-      if (!res.ok) throw new Error(`API returned ${res.status}`);
-      const data = await res.json();
-      set({
-        instruments: data,
-        instrumentsLoading: false,
-        instrumentsSource: 'api',
-      });
-    } catch (err) {
-      console.warn('OMS API unavailable, using mock instruments:', err);
-      set({
-        instruments: instrumentsData,
-        instrumentsLoading: false,
-        instrumentsError: err.message || 'Unknown error',
-        instrumentsSource: 'mock',
-      });
-    }
-  },
-
-  /**
-   * Fetch a single instrument by ID from the OMS API.
-   * Used when opening Create Order by URL (e.g. /order/INS002) so the request hits GET /api/instruments/:id.
-   */
-  instrumentDetailLoading: false,
-  instrumentDetailError: null,
-  fetchInstrumentById: async (id) => {
-    console.log("fetchInstrumentById getting called ==>> ", id);
-    set({ instrumentDetailLoading: true, instrumentDetailError: null });
-    try {
-      const res = await fetch(`${OMS_API_BASE}/api/instruments/${id}`);
-      if (!res.ok) {
-        if (res.status === 404) throw new Error(`Instrument ${id} not found`);
-        throw new Error(`API returned ${res.status}`);
-      }
-      const data = await res.json();
-      set({ selectedInstrument: data, instrumentDetailLoading: false });
-      return data;
-    } catch (err) {
-      set({
-        instrumentDetailError: err.message || 'Failed to load instrument',
-        instrumentDetailLoading: false,
-      });
-      throw err;
-    }
-  },
 
   selectedInstrument: null,
   selectInstrument: (instrument) => set({ selectedInstrument: instrument }),
@@ -193,7 +118,7 @@ const useOmsStore = create((set, get) => ({
   isSubmitting: false,
 
   /**
-   * Submit an order via the Fastify OMS API.
+   * Submit an order via the OMS API client.
    * Falls back to simulated local submission if the API is unreachable.
    */
   submitOrder: async () => {
@@ -215,42 +140,37 @@ const useOmsStore = create((set, get) => ({
       return false;
     }
 
+    const payload = {
+      instrumentId: selectedInstrument.id,
+      ticker: selectedInstrument.ticker,
+      currency: selectedInstrument.currency,
+      transactionType: orderForm.transactionType,
+      orderType: orderForm.orderType,
+      orderBy: orderForm.orderBy,
+      quantity: orderForm.quantity,
+      amount: orderForm.amount,
+      limitPrice: orderForm.limitPrice,
+      bankAccountId: orderForm.bankAccountId,
+      totalAmount: total,
+      feeExceptionApplicable: orderForm.feeExceptionApplicable,
+      exceptionFeePercent: orderForm.exceptionFeePercent,
+      ...(orderForm.transactionType === 'sip' || orderForm.transactionType === 'swp'
+        ? {
+            placeFirstOrderToday: orderForm.placeFirstOrderToday,
+            startDate: orderForm.startDate,
+            frequency: orderForm.frequency,
+            tenure: orderForm.tenure,
+            numberOfUnits: orderForm.numberOfUnits,
+            installmentAmount: orderForm.installmentAmount,
+          }
+        : {}),
+    };
+
     set({ isSubmitting: true });
     try {
-      const res = await fetch(`${OMS_API_BASE}/api/orders`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          instrumentId: selectedInstrument.id,
-          ticker: selectedInstrument.ticker,
-          currency: selectedInstrument.currency,
-          transactionType: orderForm.transactionType,
-          orderType: orderForm.orderType,
-          orderBy: orderForm.orderBy,
-          quantity: orderForm.quantity,
-          amount: orderForm.amount,
-          limitPrice: orderForm.limitPrice,
-          bankAccountId: orderForm.bankAccountId,
-          totalAmount: total,
-          feeExceptionApplicable: orderForm.feeExceptionApplicable,
-          exceptionFeePercent: orderForm.exceptionFeePercent,
-          // SIP/SWP fields
-          ...(orderForm.transactionType === 'sip' || orderForm.transactionType === 'swp'
-            ? {
-                placeFirstOrderToday: orderForm.placeFirstOrderToday,
-                startDate: orderForm.startDate,
-                frequency: orderForm.frequency,
-                tenure: orderForm.tenure,
-                numberOfUnits: orderForm.numberOfUnits,
-                installmentAmount: orderForm.installmentAmount,
-              }
-            : {}),
-        }),
-      });
-      console.log("res ==>> ", res);
-      const data = await res.json();
+      const { ok, data } = await apiSubmitOrder(payload);
       const txLabel = orderForm.transactionType.toUpperCase();
-      if (res.ok && data.status === 'success') {
+      if (ok && data.status === 'success') {
         dispatchNotification({
           type: 'success',
           title: 'Order Placed Successfully',
@@ -269,7 +189,6 @@ const useOmsStore = create((set, get) => ({
         return false;
       }
     } catch (err) {
-      // Fallback: if API is down, simulate locally
       console.warn('OMS API unreachable for order submission, simulating locally:', err);
       await new Promise((resolve) => setTimeout(resolve, 1200));
 
