@@ -13,6 +13,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import useOmsStore from '@/store/useOmsStore';
+import { useInstrumentById } from '@/hooks/useInstrumentById';
 
 const TRANSACTION_TYPES = [
   { value: 'buy', label: 'Buy' },
@@ -36,12 +37,14 @@ export default function CreateOrder() {
   const navigate = useNavigate();
   const { t } = useAppTranslation();
 
-  const instruments = useOmsStore((s) => s.instruments);
-  const selectedInstrument = useOmsStore((s) => s.selectedInstrument);
+  const { data: instrument, loading: instrumentDetailLoading, error: instrumentDetailError } = useInstrumentById(instrumentId);
   const selectInstrument = useOmsStore((s) => s.selectInstrument);
-  const fetchInstrumentById = useOmsStore((s) => s.fetchInstrumentById);
-  const instrumentDetailLoading = useOmsStore((s) => s.instrumentDetailLoading);
-  const instrumentDetailError = useOmsStore((s) => s.instrumentDetailError);
+  const selectedInstrument = useOmsStore((s) => s.selectedInstrument);
+
+  useEffect(() => {
+    if (instrument) selectInstrument(instrument);
+  }, [instrument, selectInstrument]);
+
   const bankAccounts = useOmsStore((s) => s.bankAccounts);
   const orderForm = useOmsStore((s) => s.orderForm);
   const setOrderField = useOmsStore((s) => s.setOrderField);
@@ -55,14 +58,6 @@ export default function CreateOrder() {
   const getSelectedBankAccount = useOmsStore((s) => s.getSelectedBankAccount);
   const submitOrder = useOmsStore((s) => s.submitOrder);
   const isSubmitting = useOmsStore((s) => s.isSubmitting);
-
-  useEffect(() => {
-    // console.log("inside useEffect ", instrumentId)
-    if (!instrumentId) return;
-    // console.log("selectedInstrument ==>> ", selectedInstrument);
-    // if (selectedInstrument?.id === instrumentId) return;
-    fetchInstrumentById(instrumentId).catch(() => navigate('..'));
-  }, [instrumentId, selectedInstrument?.id, fetchInstrumentById, navigate]);
 
   if (instrumentDetailLoading) {
     return (
@@ -108,9 +103,7 @@ export default function CreateOrder() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
-      {/* -ms-2 = logical negative margin-start (replaces -ml-2) */}
       <Button variant="ghost" size="sm" onClick={handleBack} className="mb-4 -ms-2">
-        {/* rtl:rotate-180 flips arrow direction in RTL */}
         <ArrowLeft className="me-1 h-4 w-4 rtl:rotate-180 transition-transform" />
         {t('order.back')}
       </Button>
@@ -121,7 +114,6 @@ export default function CreateOrder() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 items-start">
-        {/* Instrument Details */}
         <Card>
           <CardHeader>
             <CardTitle>{t('order.instrumentDetails')}</CardTitle>
@@ -151,7 +143,6 @@ export default function CreateOrder() {
           </CardContent>
         </Card>
 
-        {/* Order Form */}
         <Card>
           <CardHeader>
             <CardTitle>{t('order.orderForm')}</CardTitle>

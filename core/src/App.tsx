@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom"
 import { I18nextProvider } from "react-i18next"
 import { Toaster } from "sonner"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import coreI18n from "./i18n"
 import AppSidebar from "@/components/app-sidebar"
 import Header from "@/components/header"
@@ -12,6 +13,15 @@ import {
 import { useModules } from "@/hooks/useModules"
 import { FederationMFE } from "@/components/FederationMFE"
 import { useMfeNotifications } from "@/hooks/useMfeNotifications"
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5,
+      gcTime: 1000 * 60 * 30,
+    },
+  },
+})
 
 // Wrapper to handle sidebar toggle from Header
 const AppLayout = () => {
@@ -56,7 +66,7 @@ const AppLayout = () => {
   )
 }
 
-export default function App() {
+function CoreContent() {
   return (
     <I18nextProvider i18n={coreI18n}>
       <BrowserRouter>
@@ -67,5 +77,13 @@ export default function App() {
         <Toaster richColors position="top-right" />
       </BrowserRouter>
     </I18nextProvider>
+  )
+}
+
+export default function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <CoreContent />
+    </QueryClientProvider>
   )
 }

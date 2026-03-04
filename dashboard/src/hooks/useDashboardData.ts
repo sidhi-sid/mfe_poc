@@ -1,97 +1,85 @@
-import { useState, useEffect } from 'react'
+import { useQueries } from '@tanstack/react-query'
 import type { CustomerPortfolio } from '@/data/portfolio-mock'
 import { mockPortfolio } from '@/data/portfolio-mock'
-
-const DASHBOARD_API_BASE = 'http://localhost:4001'
+import { fetchPortfolio, fetchBank } from '@/api/client'
 
 /**
- * Hook to fetch portfolio overview data from the Fastify API.
- * Pass accessToken from authSelfOnboarding so portfolio/bank use the same session.
- * Falls back to mock data if the API is unreachable.
+ * Hook to fetch portfolio overview data from the Fastify API via TanStack Query.
+ * Uses query keys ['portfolio', clientId] and ['bank', clientId] for caching.
+ * Queries run only when accessToken is present (enabled). Falls back to mock data on API error.
  */
 export function useDashboardData(clientId: number = 201, accessToken?: string | null) {
-  const [data, setData] = useState<CustomerPortfolio | null>(null)
-  const [rawPortfolio, setRawPortfolio] = useState<any>(null)
-  const [rawBank, setRawBank] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [usingMock, setUsingMock] = useState(false)
+  const enabled = !!accessToken
 
-  useEffect(() => {
-    if (!accessToken) return
-    let cancelled = false
+  const results = useQueries({
+    queries: [
+      {
+        queryKey: ['portfolio', clientId],
+        queryFn: () => fetchPortfolio(clientId, accessToken!),
+        enabled,
+      },
+      {
+        queryKey: ['bank', clientId],
+        queryFn: () => fetchBank(clientId, accessToken!),
+        enabled,
+      },
+    ],
+  })
 
-    const headers: HeadersInit = {
-      Authorization: accessToken.startsWith('Bearer ') ? accessToken : `Bearer ${accessToken}`,
-    }
+  const [portfolioQuery, bankQuery] = results
+  const portfolioData = portfolioQuery.data
+  const bankData = bankQuery.data
+  const portfolioError = portfolioQuery.error
+  const bankError = bankQuery.error
+  const isPending = portfolioQuery.isPending || bankQuery.isPending
+  const isError = portfolioQuery.isError || bankQuery.isError
 
-    async function fetchData() {
-      try {
-        const [portfolioRes, bankRes] = await Promise.all([
-          fetch(`${DASHBOARD_API_BASE}/api/dashboard/${clientId}/portfolio?fromDate=2025-01-01&currencyId=247`, { headers }),
-          fetch(`${DASHBOARD_API_BASE}/api/dashboard/${clientId}/bank?fromDate=2025-01-01&currencyId=247`, { headers }),
-        ])
+  let data: CustomerPortfolio | null = null
+  let error: string | null = null
+  let usingMock = false
 
-        if (!portfolioRes.ok) throw new Error(`Portfolio API returned ${portfolioRes.status}`)
-        if (!bankRes.ok) throw new Error(`Bank API returned ${bankRes.status}`)
+  if (isError) {
+    data = mockPortfolio
+    usingMock = true
+    error = (portfolioError ?? bankError) instanceof Error
+      ? (portfolioError ?? bankError)!.message
+      : 'Unknown error'
+  } else if (portfolioData != null && bankData != null) {
+    data = transformDashboardData(portfolioData, bankData, clientId)
+    usingMock = false
+  }
 
-        const portfolioJson = await portfolioRes.json()
-        const bankJson = await bankRes.json()
-
-        if (!cancelled) {
-          setRawPortfolio(portfolioJson)
-          setRawBank(bankJson)
-
-          const portfolio = transformDashboardData(portfolioJson, bankJson, clientId)
-          setData(portfolio)
-          setUsingMock(false)
-        }
-      } catch (err) {
-        console.warn('Dashboard API unavailable, using mock data:', err)
-        if (!cancelled) {
-          setData(mockPortfolio)
-          setUsingMock(true)
-          setError(err instanceof Error ? err.message : 'Unknown error')
-        }
-      } finally {
-        if (!cancelled) setLoading(false)
-      }
-    }
-
-    fetchData()
-    return () => { cancelled = true }
-  }, [clientId, accessToken])
-
-  return { data, rawPortfolio, rawBank, loading, error, usingMock }
+  return {
+    data,
+    rawPortfolio: portfolioData ?? null,
+    rawBank: bankData ?? null,
+    loading: enabled ? isPending : true,
+    error,
+    usingMock,
+  }
 }
 
 /**
- * Transform LoopBack's response into our CustomerPortfolio shape.
- *
- * portfolioJson contains: portfolioSeries, portfolioSummary, timedTransactions, portfolioNetValue
- * bankJson contains: bankDetails (savings, loans)
+ * Transform API responses into our CustomerPortfolio shape.
+ * portfolioJson: portfolioSeries, portfolioSummary, timedTransactions, portfolioNetValue
+ * bankJson: bankDetails (savings, loans)
  */
 function transformDashboardData(portfolioJson: any, bankJson: any, clientId: number): CustomerPortfolio {
-  // --- Portfolio overview data ---
   const summary = portfolioJson?.portfolioSummary?.data
   const netValue = portfolioJson?.portfolioNetValue?.data
 
-  // Try to extract totals from portfolio summary/net value
   const totalValue = netValue?.netValue ?? summary?.totalMarketValue ?? 0
   const investedValue = summary?.totalCostValue ?? summary?.totalInvestedValue ?? 0
   const dayChangePercent = summary?.dayChangePercent ?? 0
 
-  // --- Bank data ---
   const bankDetails = bankJson?.bankDetails?.data
   const savings = bankDetails?.savingsDetails
   const cashBalance = savings?.totalBalancePosition ?? 0
 
-  // --- Build holdings from portfolio series or summary ---
   const seriesData = portfolioJson?.portfolioSeries?.data
   let holdings: any[] = []
 
   if (Array.isArray(seriesData) && seriesData.length > 0) {
-    // Use portfolio series data as holdings
     holdings = seriesData.map((item: any, idx: number) => ({
       symbol: item.ticker || item.assetClass || item.name || `ITEM-${idx}`,
       name: item.name || item.assetClass || `Holding ${idx + 1}`,
@@ -101,7 +89,6 @@ function transformDashboardData(portfolioJson: any, bankJson: any, clientId: num
       changePercent: item.changePercent ?? item.returnPercent ?? 0,
     }))
   } else if (savings?.breakdown) {
-    // Fallback: use bank account breakdown
     holdings = savings.breakdown.map((account: any, idx: number) => ({
       symbol: account.accountType ?? `ACCT-${idx}`,
       name: `${account.accountType} (${account.currency})`,
