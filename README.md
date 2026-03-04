@@ -21,14 +21,23 @@ If an MFE dev server runs on a different port, update its `baseUrl` in `module.j
 
 To add more MFEs, add entries to `module.json` and register the icon name in `core/src/components/app-sidebar.tsx` (`ICON_MAP`).
 
-## Module Federation
+## Module Federation (legacy)
 
-Core loads OMS and Dashboard as **remotes** via `@originjs/vite-plugin-federation`. When you click Dashboard or OMS in the sidebar, the corresponding remote app is loaded and rendered in the same page (no iframe); React is shared so only one instance runs.
+Previously, Core loaded OMS and Dashboard as **remotes** via `@originjs/vite-plugin-federation`. When you clicked Dashboard or OMS in the sidebar, the corresponding remote app was loaded and rendered in the same page (no iframe); React was shared so only one instance ran.
 
-- **Federation needs built remotes:** Run Core with `npm run dev`; run Dashboard and OMS with `npm run dev:remote` (build + preview). Then open http://localhost:5173. **Run all three** for full experience: `core` (5173), `oms` (5174), `dashboard` (5175). Start remotes before or after core; the shell will load them when you navigate to their route.
-- Remotes expose `./App` (via `remoteEntry.tsx`); the host lazy-loads `oms/App` and `dashboard/App`. Core derives federation remote URLs from `core/public/module.json` (baseUrl + `/assets/remoteEntry.js`). Adding a new federated MFE: add it to `module.json`, expose it in the MFE’s vite config, then register a lazy import in `core/src/components/FederationMFE.tsx` (`REMOTE_APPS`) (and types in `core/src/types/federation.d.ts`).
+- **Federation needed built remotes:** You had to run Core with `npm run dev` and Dashboard/OMS with `npm run dev:remote` so that `remoteEntry.js` existed. This path is now considered legacy.
+- Remotes exposed `./App` (via `remoteEntry.tsx`); the host lazy‑loaded `oms/App` and `dashboard/App`. Core derived federation remote URLs from `core/public/module.json` (baseUrl + `/assets/remoteEntry.js`).
 
-## Quick Start (Module Federation)
+## Why we removed Module Federation
+
+We moved away from Module Federation to a simpler **iframe‑based integration** for MFEs.
+
+- **Dynamic modules from config:** MFEs are now discovered from a dynamic `module.json` / backend config. With Module Federation, we had to wire remotes at build time in Vite’s federation config, which doesn’t play well with modules that change at runtime.
+- **Simpler onboarding of new MFEs:** With iframes, adding a new MFE is mostly about pointing to its URL in `module.json`. We don’t need to touch the host’s build config or expose new remote entries.
+- **Better isolation:** Each MFE runs in its own iframe document, so CSS, JS, and runtime errors are isolated. This avoids style clashes and makes it safer for different teams to deploy independently.
+- **Less coupling between apps:** MFEs can be deployed on different domains, versions, or even tech stacks. The host just needs a URL, which keeps deployments and rollbacks straightforward.
+
+## Quick Start (legacy Module Federation setup)
 
 Install deps once per app, then run core + remotes:
 
