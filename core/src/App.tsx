@@ -45,7 +45,7 @@ const AppLayout = () => {
                 <Route
                   key={m.id}
                   path={`${m.path}/*`}
-                  element={<FederationMFE module={m} />}
+                  element={<FederationMFE key={m.id} module={m} />}
                 />
               ))}
               <Route

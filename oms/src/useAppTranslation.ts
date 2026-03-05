@@ -1,7 +1,9 @@
 /**
  * Tiny translation hook — no i18n library.
- * Language is driven by the 'app:language-change' window event fired by Core.
- * RTL layout is handled automatically by the <html dir="rtl"> CSS contract.
+ * Language is driven by the 'app:language-change' event:
+ *   • Standalone / Module Federation → CustomEvent fired by Core on same window
+ *   • Iframe mode → re-dispatched by setupHostSync() from postMessage
+ * RTL layout is handled by <html dir="rtl"> set in theme-sync.ts (host bridge).
  */
 import { useState, useEffect } from 'react'
 import en from './locales/en.json'
@@ -23,7 +25,15 @@ export function useAppTranslation() {
 
   useEffect(() => {
     const handler = (e: Event) => {
-      setLang((e as CustomEvent<{ language: string }>).detail.language)
+      const detail = (e as CustomEvent<{ language: string; dir?: string }>).detail
+      const language = detail.language
+      const dir = detail.dir ?? (language === 'ar' ? 'rtl' : 'ltr')
+
+      // Update <html> attributes so CSS dir-aware styles work inside the iframe
+      document.documentElement.setAttribute('lang', language)
+      document.documentElement.setAttribute('dir', dir)
+
+      setLang(language)
     }
     window.addEventListener('app:language-change', handler)
     return () => window.removeEventListener('app:language-change', handler)

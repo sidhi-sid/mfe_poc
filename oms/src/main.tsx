@@ -1,12 +1,13 @@
+import './host-bootstrap' // MUST be first — sets theme/lang from URL params before i18n/React
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import { initTheme } from './lib/theme'
-import { setupThemeSync } from './theme-sync'
+import { setupHostSync } from './theme-sync'
 import App from './App.tsx'
 
 initTheme()
-setupThemeSync()
+setupHostSync()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
