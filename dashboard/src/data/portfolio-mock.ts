@@ -7,6 +7,37 @@ export interface PortfolioHolding {
   changePercent: number
 }
 
+export interface AccountBreakdown {
+  accountType: string
+  currency: string
+  accountStartDate: string
+  availableBalPos: number
+  availableBalRef: number
+}
+
+export interface BalanceDetails {
+  totalBalancePosition: number
+  totalBalanceReference: number
+  currency?: string
+  breakdown: AccountBreakdown[]
+}
+
+export interface CardDetail {
+  creditLimitPosition: number
+  creditLimitReference: number
+  consumedAmountPosition: number
+  consumedAmountReference: number
+  cardNumber: string
+  cardExpDate: string
+}
+
+export interface BankSections {
+  savings: BalanceDetails | null
+  loans: BalanceDetails | null
+  deposits: BalanceDetails | null
+  cards: CardDetail[] | null
+}
+
 export interface CustomerPortfolio {
   customerId: string
   customerName: string
