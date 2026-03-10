@@ -1,7 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
-import federation from '@originjs/vite-plugin-federation'
 import path from "path"
 import { fileURLToPath } from "url"
 
@@ -17,15 +16,6 @@ export default defineConfig({
       },
     }),
     tailwindcss(),
-    federation({
-      name: 'core',
-      remotes: {},
-      shared: {
-        react: { requiredVersion: '^19.0.0' },
-        'react-dom': { requiredVersion: '^19.0.0' },
-        'react-router-dom': {},
-      },
-    }),
   ],
   resolve: {
     alias: {
