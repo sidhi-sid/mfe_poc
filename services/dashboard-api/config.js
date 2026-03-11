@@ -1,6 +1,8 @@
 'use strict';
 
 const config = {
+  memcachedUrl: process.env.MEMCACHED_URL || 'localhost:11211',
+  cacheTTL: parseInt(process.env.CACHE_TTL_SECONDS || '300', 10), // 5 minutes default
   lbBaseUrl: process.env.LB_BASE_URL || 'https://bm-rhel-second-staging.wealthfy.com/api',
   lbToken: process.env.LB_TOKEN || '',
   lbCookie: process.env.LB_COOKIE || '',

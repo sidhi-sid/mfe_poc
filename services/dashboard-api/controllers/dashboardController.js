@@ -1,10 +1,21 @@
 'use strict';
 
 const { proxyToLoopback } = require('../lb-proxy');
+const { getCache, setCache, deleteCache } = require('../cache');
 
 async function getPortfolio(request, reply) {
   const { clientId } = request.params;
-  const { fromDate, currencyId, contextFilter } = request.query;
+  const { fromDate = '2025-01-01', currencyId = '247', contextFilter } = request.query;
+
+  const cacheKey = `portfolio:${clientId}:${fromDate}:${currencyId}`;
+
+  const cached = await getCache(cacheKey);
+  if (cached) {
+    request.log.info(`[cache] HIT ${cacheKey}`);
+    return reply.send(cached);
+  }
+
+  request.log.info(`[cache] MISS ${cacheKey}`);
 
   const lbPath = `ClientDashboard/${clientId}/fetchDashboardData`;
 
@@ -20,19 +31,33 @@ async function getPortfolio(request, reply) {
     path: lbPath,
     token: request.lbToken,
     query: {
-      fromDate: fromDate || '2025-01-01',
-      currencyId: currencyId || '247',
+      fromDate,
+      currencyId,
       contextFilter: contextFilter || JSON.stringify({ custodialAccountId: [1] }),
       widgetsToInclude,
     },
   });
+
+  if (result.status === 200) {
+    await setCache(cacheKey, result.data);
+  }
 
   reply.code(result.status).send(result.data);
 }
 
 async function getBank(request, reply) {
   const { clientId } = request.params;
-  const { fromDate, currencyId, contextFilter } = request.query;
+  const { fromDate = '2025-01-01', currencyId = '247', contextFilter } = request.query;
+
+  const cacheKey = `bank:${clientId}:${fromDate}:${currencyId}`;
+
+  const cached = await getCache(cacheKey);
+  if (cached) {
+    request.log.info(`[cache] HIT ${cacheKey}`);
+    return reply.send(cached);
+  }
+
+  request.log.info(`[cache] MISS ${cacheKey}`);
 
   const lbPath = `ClientDashboard/${clientId}/fetchDashboardData`;
 
@@ -52,12 +77,16 @@ async function getBank(request, reply) {
     path: lbPath,
     token: request.lbToken,
     query: {
-      fromDate: fromDate || '2025-01-01',
-      currencyId: currencyId || '247',
+      fromDate,
+      currencyId,
       contextFilter: contextFilter || JSON.stringify({ custodialAccountId: [1] }),
       widgetsToInclude,
     },
   });
+
+  if (result.status === 200) {
+    await setCache(cacheKey, result.data);
+  }
 
   reply.code(result.status).send(result.data);
 }
@@ -117,6 +146,22 @@ async function authSelfOnboarding(request, reply) {
   reply.code(result.status).send(result.data);
 }
 
+/**
+ * Admin endpoint: DELETE /api/dashboard/:clientId/cache
+ * Force-invalidates portfolio + bank cache for a client.
+ */
+async function invalidateClientCache(request, reply) {
+  const { clientId } = request.params;
+  const { fromDate = '2025-01-01', currencyId = '247' } = request.query;
+
+  await Promise.all([
+    deleteCache(`portfolio:${clientId}:${fromDate}:${currencyId}`),
+    deleteCache(`bank:${clientId}:${fromDate}:${currencyId}`),
+  ]);
+
+  reply.send({ invalidated: true, clientId });
+}
+
 module.exports = {
   getPortfolio,
   getBank,
@@ -124,4 +169,5 @@ module.exports = {
   getDashboardAction,
   getWMURL,
   authSelfOnboarding,
+  invalidateClientCache,
 };
