@@ -1,10 +1,18 @@
 'use strict';
 
 const { proxyToLoopback } = require('../lb-proxy');
+const cache = require('../lib/cache');
 
 async function getPortfolio(request, reply) {
   const { clientId } = request.params;
   const { fromDate, currencyId, contextFilter } = request.query;
+
+  const cacheKey = cache.buildKey('portfolio', clientId, fromDate, currencyId, contextFilter);
+  console.log("cacheKey ==>> ", cacheKey);
+  const cached = await cache.get(cacheKey);
+  if (cached != null) {
+    return reply.code(cached.status).send(cached.data);
+  }
 
   const lbPath = `ClientDashboard/${clientId}/fetchDashboardData`;
 
@@ -27,12 +35,21 @@ async function getPortfolio(request, reply) {
     },
   });
 
+  if (result.status >= 200 && result.status < 300) {
+    await cache.set(cacheKey, { status: result.status, data: result.data });
+  }
   reply.code(result.status).send(result.data);
 }
 
 async function getBank(request, reply) {
   const { clientId } = request.params;
   const { fromDate, currencyId, contextFilter } = request.query;
+
+  const cacheKey = cache.buildKey('bank', clientId, fromDate, currencyId, contextFilter);
+  const cached = await cache.get(cacheKey);
+  if (cached != null) {
+    return reply.code(cached.status).send(cached.data);
+  }
 
   const lbPath = `ClientDashboard/${clientId}/fetchDashboardData`;
 
@@ -59,6 +76,9 @@ async function getBank(request, reply) {
     },
   });
 
+  if (result.status >= 200 && result.status < 300) {
+    await cache.set(cacheKey, { status: result.status, data: result.data });
+  }
   reply.code(result.status).send(result.data);
 }
 

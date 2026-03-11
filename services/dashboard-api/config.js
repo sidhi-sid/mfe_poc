@@ -17,6 +17,8 @@ const config = {
     'http://localhost:5174',
     'http://localhost:5175',
   ],
+  redisUrl: process.env.REDIS_URL ?? '',
+  cacheTtlSeconds: parseInt(process.env.CACHE_TTL_SECONDS || '300', 10),
 };
 
 module.exports = config;

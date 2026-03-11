@@ -7,8 +7,15 @@ const cors = require('@fastify/cors');
 const config = require('./config');
 const authPlugin = require('./auth-plugin');
 const dashboardRoutes = require('./routes/dashboard');
+const redis = require('./lib/redis');
 
 async function start() {
+  fastify.decorate('redis', redis);
+
+  fastify.addHook('onClose', async (instance) => {
+    await redis.close();
+  });
+
   await fastify.register(cors, {
     origin: config.corsOrigins,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],

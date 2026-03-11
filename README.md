@@ -71,21 +71,74 @@ Each MFE has its own Fastify backend that proxies requests to the LoopBack 3 API
 
 ```bash
 # 1) Dashboard API
-cd api/dashboard
+cd services/dashboard-api
 npm install
 cp .env.example .env
-# Edit .env → paste your LoopBack token into LB_ACCESS_TOKEN
+# Edit .env → paste your LoopBack token into LB_TOKEN
 npm run dev
 
 # 2) OMS API
-cd ../oms
+cd ../oms-api
 npm install
 cp .env.example .env
-# Edit .env → paste your LoopBack token into LB_ACCESS_TOKEN
+# Edit .env → paste your LoopBack token into LB_TOKEN
 npm run dev
 ```
 
 Get your LoopBack token by logging into BM_WEALTH_MANAGEMENT and copying it from the session.
+
+### Redis cache (Dashboard API)
+
+Redis is used by the **Dashboard API** (`services/dashboard-api`) to keep a short‑term copy of dashboard data in memory (inside Redis). This makes the dashboard faster because we don’t call the LoopBack API every single time.
+
+#### How it works (simple)
+
+- **First time** you open the dashboard: the Dashboard API fetches data from LoopBack and also saves it in Redis.
+- **Next time** (within a few minutes): the Dashboard API returns the saved data from Redis (much faster).
+- After the time limit ends, Redis forgets the data and the next request fetches fresh data again.
+
+#### What is cached
+
+- `GET /api/dashboard/:clientId/portfolio`
+- `GET /api/dashboard/:clientId/bank`
+
+#### Time limit (TTL)
+
+- `CACHE_TTL_SECONDS` controls how long Redis keeps data.
+- Default is **300 seconds (5 minutes)**.
+
+#### How to start Redis + caching (local)
+
+1) Start Redis:
+
+```bash
+brew --version
+brew install redis
+brew services start redis
+```
+Quick verify Redis is running
+redis-cli ping -> PONG
+
+Check Redis has keys
+redis-cli KEYS "dashboard:*"
+
+2) In `services/dashboard-api`, enable Redis:
+
+- Copy `.env.example` → `.env`
+- Set:
+  - `REDIS_URL=redis://localhost:6379`
+  - `CACHE_TTL_SECONDS=300` (or any value you want)
+
+3) Start the Dashboard API:
+
+```bash
+cd services/dashboard-api
+npm run dev
+```
+
+#### If Redis is not running
+
+Nothing breaks. The Dashboard API will work normally, it will just fetch from LoopBack every time (no caching).
 
 ### Generic Proxy
 
