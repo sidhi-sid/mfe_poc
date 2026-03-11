@@ -1,7 +1,7 @@
 /**
  * Tiny translation hook — no i18n library.
  * Language is driven by the 'app:language-change' event:
- *   • Standalone / Module Federation → CustomEvent fired by Core on same window
+ *   • Standalone → CustomEvent fired on same window
  *   • Iframe mode → re-dispatched by setupHostSync() from postMessage
  * RTL layout is handled by <html dir="rtl"> set in theme-sync.ts (host bridge).
  */

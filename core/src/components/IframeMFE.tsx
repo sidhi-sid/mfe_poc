@@ -42,11 +42,11 @@ const HOST_EVENTS: HostEvent[] = [
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
-interface FederationMFEProps {
+interface IframeMFEProps {
   module: ModuleWithAvailability
 }
 
-export function FederationMFE({ module }: FederationMFEProps) {
+export function IframeMFE({ module }: IframeMFEProps) {
   const iframeRef = useRef<HTMLIFrameElement | null>(null)
 
   // Build the iframe URL with current host state as query params.

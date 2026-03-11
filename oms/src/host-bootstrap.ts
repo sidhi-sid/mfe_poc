@@ -1,7 +1,7 @@
 /**
  * host-bootstrap.ts — MUST be imported FIRST in main.tsx
  *
- * Parses URL query params set by Core's FederationMFE component and applies
+ * Parses URL query params set by Core's IframeMFE component and applies
  * them to the DOM synchronously, BEFORE i18n / React / anything else runs.
  *
  * This guarantees the MFE renders with the correct theme and language on the

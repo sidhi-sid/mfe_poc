@@ -6,8 +6,7 @@ import { applyTheme, type Theme } from './lib/theme';
  *
  * This means every existing `window.addEventListener('theme-change', ...)`
  * or `window.addEventListener('app:language-change', ...)` keeps working
- * unchanged — regardless of whether this MFE runs standalone, via Module
- * Federation, or inside an iframe.
+ * unchanged — regardless of whether this MFE runs standalone or inside an iframe.
  *
  * Namespacing: Core sends  `{ type: 'core:<eventName>', payload: {...} }`.
  * We strip the `core:` prefix and dispatch `CustomEvent(<eventName>, { detail: payload })`.
