@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bank of Muscat — Leading Financial Solutions</title>
+  <meta name="description"
+    content="Bank of Muscat — Oman's leading financial institution offering personal banking, wealth management, and digital solutions." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+
+<body>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!--  NAVBAR                                        -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="#" class="nav-brand" data-page="home">
+        <div class="brand-text">
+          <span class="brand-name">Bank of Muscat</span>
+        </div>
+      </a>
+
+      <div class="nav-links">
+        <a href="#" class="nav-link active" data-page="home">Home</a>
+        <a href="#" class="nav-link" data-page="blog">Blog</a>
+        <a href="#" class="nav-link nav-link--wealth" data-page="wealth">
+          <span class="wealth-icon">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+              stroke-linejoin="round">
+              <rect x="2" y="5" width="16" height="12" rx="2" />
+              <path d="M2 9h16" />
+              <circle cx="14" cy="13" r="1.5" />
+            </svg>
+          </span>
+          Wealth App
+        </a>
+      </div>
+
+      <button class="mobile-toggle" id="mobile-toggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!--  PAGE: HOME                                    -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="page page--home active" id="page-home">
+    <!-- Hero -->
+    <section class="hero">
+      <div class="hero-bg">
+        <div class="hero-gradient"></div>
+        <div class="hero-pattern"></div>
+      </div>
+      <div class="hero-content container">
+        <div class="hero-text">
+          <span class="hero-badge">🇴🇲 Oman's #1 Bank</span>
+          <h1 class="hero-title">Banking Made <span class="text-gradient">Simple &amp; Secure</span></h1>
+          <p class="hero-desc">Experience world-class financial services with Bank of Muscat. From personal banking to
+            wealth management, we've got you covered.</p>
+          <div class="hero-actions">
+            <a href="#" class="btn btn--primary btn--lg" data-page="wealth">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                stroke-linejoin="round" class="btn-icon">
+                <rect x="2" y="5" width="16" height="12" rx="2" />
+                <path d="M2 9h16" />
+                <circle cx="14" cy="13" r="1.5" />
+              </svg>
+              Open Wealth App
+            </a>
+            <a href="#" class="btn btn--ghost btn--lg">Learn More →</a>
+          </div>
+        </div>
+        <div class="hero-visual">
+          <div class="hero-card card-1">
+            <div class="hero-card-row">
+              <span class="hero-card-label">Savings Account</span>
+              <span class="hero-card-badge">Active</span>
+            </div>
+            <span class="hero-card-amount">10,147 <small>OMR</small></span>
+            <div class="hero-card-bar">
+              <div class="hero-card-fill" style="width:72%"></div>
+            </div>
+          </div>
+          <div class="hero-card card-2">
+            <div class="hero-card-row">
+              <span class="hero-card-label">Investments</span>
+              <span class="hero-card-change positive">+12.3%</span>
+            </div>
+            <span class="hero-card-amount">3,599 <small>OMR</small></span>
+            <div class="mini-chart">
+              <svg viewBox="0 0 120 40" fill="none">
+                <path d="M0 35 Q20 28 30 20 T60 15 T90 10 T120 5" stroke="url(#chart-grad)" stroke-width="2"
+                  fill="none" />
+                <defs>
+                  <linearGradient id="chart-grad" x1="0" y1="0" x2="120" y2="0">
+                    <stop stop-color="#22c55e" />
+                    <stop offset="1" stop-color="#16a34a" />
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+          </div>
+          <div class="hero-card card-3">
+            <div class="hero-card-row">
+              <span class="hero-card-label">Credit Card</span>
+              <span class="hero-card-badge badge-warn">2,187 OMR</span>
+            </div>
+            <span class="hero-card-sub">**** **** **** 6959</span>
+            <span class="hero-card-exp">Expires 06/24</span>
+          </div>
+        </div>
+      </div>
+      <div class="hero-wave">
+        <svg viewBox="0 0 1440 100" preserveAspectRatio="none">
+          <path d="M0 40 C360 80 720 0 1080 40 S1440 80 1440 40 V100 H0Z" fill="var(--bg-page)" />
+        </svg>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section class="section container" id="features">
+      <div class="section-header">
+        <span class="section-tag">Why Choose Us</span>
+        <h2 class="section-title">World-Class Financial Services</h2>
+        <p class="section-desc">Trusted by millions of customers across Oman and the Gulf region.</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon feature-icon--green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+          </div>
+          <h3>Secure Banking</h3>
+          <p>State-of-the-art encryption and multi-factor authentication protect your assets 24/7.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon feature-icon--blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M2 12h20" />
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+            </svg>
+          </div>
+          <h3>Global Reach</h3>
+          <p>Transfer funds worldwide with competitive exchange rates and instant processing.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon feature-icon--purple">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path
+                d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+              <path d="M3.27 6.96L12 12.01l8.73-5.05" />
+              <path d="M12 22.08V12" />
+            </svg>
+          </div>
+          <h3>Wealth Management</h3>
+          <p>Expert portfolio management and personalized investment strategies for your future.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon feature-icon--orange">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="3" width="20" height="14" rx="2" />
+              <line x1="8" y1="21" x2="16" y2="21" />
+              <line x1="12" y1="17" x2="12" y2="21" />
+            </svg>
+          </div>
+          <h3>Digital First</h3>
+          <p>Manage your finances anywhere with our cutting-edge mobile and web platforms.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stats -->
+    <section class="stats-section">
+      <div class="container stats-grid">
+        <div class="stat">
+          <span class="stat-value">2M+</span>
+          <span class="stat-label">Active Customers</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">$28B</span>
+          <span class="stat-label">Assets Under Management</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">150+</span>
+          <span class="stat-label">Branches Nationwide</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">99.9%</span>
+          <span class="stat-label">Uptime Guarantee</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section container">
+      <div class="cta-card">
+        <div class="cta-content">
+          <h2>Ready to Grow Your Wealth?</h2>
+          <p>Access our Wealth Management platform — portfolio tracking, investment insights, and order management in
+            one place.</p>
+          <a href="#" class="btn btn--primary btn--lg" data-page="wealth">Launch Wealth App →</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container footer-inner">
+        <div class="footer-brand">
+          <span class="brand-name">Bank of Muscat</span>
+          <p>Oman's leading financial institution since 1982.</p>
+        </div>
+        <div class="footer-links">
+          <div>
+            <h4>Products</h4>
+            <a href="#">Personal Banking</a>
+            <a href="#">Business Banking</a>
+            <a href="#">Wealth Management</a>
+          </div>
+          <div>
+            <h4>Company</h4>
+            <a href="#">About Us</a>
+            <a href="#">Careers</a>
+            <a href="#">Contact</a>
+          </div>
+        </div>
+        <p class="footer-copy">© 2026 Bank of Muscat. All rights reserved. This is a demo environment.</p>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!--  PAGE: BLOG                                    -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="page page--blog" id="page-blog">
+    <section class="blog-hero">
+      <div class="container">
+        <span class="section-tag">Insights & News</span>
+        <h1 class="blog-hero-title">Bank of Muscat Blog</h1>
+        <p class="blog-hero-desc">Financial insights, market updates, and expert perspectives from our team.</p>
+      </div>
+    </section>
+
+    <section class="container blog-grid-section">
+      <div class="blog-grid">
+        <!-- Article 1 -->
+        <article class="blog-card blog-card--featured">
+          <div class="blog-card-img" style="background: linear-gradient(135deg, #0d4a30, #1a6b4a);"></div>
+          <div class="blog-card-body">
+            <span class="blog-tag">Wealth Management</span>
+            <h2>Digital Wealth Management: The Future of Investing in Oman</h2>
+            <p>Discover how our new Wealth App is revolutionizing portfolio management with real-time analytics and
+              automated investment strategies.</p>
+            <div class="blog-meta">
+              <span>Mohammed Al-Rashdi</span>
+              <span>·</span>
+              <span>March 8, 2026</span>
+              <span>·</span>
+              <span>5 min read</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Article 2 -->
+        <article class="blog-card">
+          <div class="blog-card-img" style="background: linear-gradient(135deg, #1e3a5f, #2563eb);"></div>
+          <div class="blog-card-body">
+            <span class="blog-tag">Market Update</span>
+            <h3>Q1 2026 Market Outlook: GCC Region Poised for Growth</h3>
+            <p>Our analysts share key insights on emerging opportunities across the Gulf markets.</p>
+            <div class="blog-meta">
+              <span>Fatima Al-Hinai</span>
+              <span>·</span>
+              <span>March 5, 2026</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Article 3 -->
+        <article class="blog-card">
+          <div class="blog-card-img" style="background: linear-gradient(135deg, #5b21b6, #7c3aed);"></div>
+          <div class="blog-card-body">
+            <span class="blog-tag">Technology</span>
+            <h3>How Micro-Frontends Power Our Digital Banking Platform</h3>
+            <p>A behind-the-scenes look at the technology that delivers seamless, modular banking experiences.</p>
+            <div class="blog-meta">
+              <span>Ali Al-Balushi</span>
+              <span>·</span>
+              <span>Feb 28, 2026</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Article 4 -->
+        <article class="blog-card">
+          <div class="blog-card-img" style="background: linear-gradient(135deg, #b45309, #f59e0b);"></div>
+          <div class="blog-card-body">
+            <span class="blog-tag">Personal Finance</span>
+            <h3>5 Savings Strategies for Young Professionals in 2026</h3>
+            <p>Practical tips to build your savings and start investing early for a secure financial future.</p>
+            <div class="blog-meta">
+              <span>Sara Al-Kindi</span>
+              <span>·</span>
+              <span>Feb 20, 2026</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Article 5 -->
+        <article class="blog-card">
+          <div class="blog-card-img" style="background: linear-gradient(135deg, #0f766e, #14b8a6);"></div>
+          <div class="blog-card-body">
+            <span class="blog-tag">Sustainability</span>
+            <h3>Green Financing: Bank of Muscat's Commitment to ESG</h3>
+            <p>Learn about our sustainable finance initiatives and green bond offerings.</p>
+            <div class="blog-meta">
+              <span>Khalid Al-Amri</span>
+              <span>·</span>
+              <span>Feb 14, 2026</span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="container footer-inner">
+        <p class="footer-copy">© 2026 Bank of Muscat. All rights reserved. This is a demo environment.</p>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!--  PAGE: WEALTH APP (IFRAME)                     -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="page page--wealth" id="page-wealth">
+    <!-- Loading overlay -->
+    <div class="wealth-loading" id="wealth-loading">
+      <div class="spinner-container">
+        <div class="spinner"></div>
+        <p class="loading-text">Loading Wealth App…</p>
+        <p class="loading-subtext">Connecting to wealth management platform</p>
+      </div>
+    </div>
+
+    <!-- Error overlay -->
+    <div class="wealth-error" id="wealth-error" style="display: none;">
+      <div class="error-card">
+        <div class="error-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+        </div>
+        <h2>Service Unavailable</h2>
+        <p>The Wealth Management platform is currently offline.</p>
+        <p class="error-hint">Please ensure the service is running:</p>
+        <pre class="error-command">cd core && npm run dev</pre>
+        <button class="btn btn--primary" id="retry-btn">Retry Connection</button>
+      </div>
+    </div>
+
+    <!-- The iframe -->
+    <iframe id="wealth-iframe" class="wealth-iframe" src="about:blank" title="Wealth Management Application"
+      allow="clipboard-read; clipboard-write"></iframe>
+  </div>
+
+  <script type="module" src="/main.js"></script>
+</body>
+
+</html>
