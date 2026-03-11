@@ -16,7 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { mockPortfolio } from "@/data/portfolio-mock"
+import { useDashboardData } from "@/hooks/useDashboardData"
 
 const SYMBOL_TO_INSTRUMENT_ID: Record<string, string> = {
   AAPL: "INS001",
@@ -41,18 +41,52 @@ function formatPercent(value: number) {
   return `${sign}${value.toFixed(2)}%`
 }
 
-export function PortfolioCard() {
-  const portfolio = mockPortfolio
-  const isPositive = portfolio.dayChangePercent >= 0
+interface PortfolioCardProps {
+  accessToken?: string | null
+}
+
+export function PortfolioCard({ accessToken }: PortfolioCardProps = {}) {
+  const { data: portfolio, loading, error, usingMock } = useDashboardData(201, accessToken)
   const { t } = useAppTranslation()
+
+  if (loading) {
+    return (
+      <Card className="w-full overflow-hidden shadow-sm">
+        <CardContent className="flex min-h-[200px] items-center justify-center">
+          <p className="text-muted-foreground">Loading dashboard data…</p>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (!portfolio) {
+    return (
+      <Card className="w-full overflow-hidden shadow-sm">
+        <CardContent className="flex min-h-[200px] items-center justify-center">
+          <p className="text-muted-foreground">Failed to load data: {error}</p>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  const isPositive = portfolio.dayChangePercent >= 0
 
   return (
     <Card className="w-full overflow-hidden shadow-sm">
       <CardHeader className="border-b bg-card pb-6">
-        <CardTitle className="text-lg font-semibold">{t('portfolio.title')}</CardTitle>
-        <CardDescription className="text-muted-foreground">
-          {portfolio.customerName} · {portfolio.customerId}
-        </CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-lg font-semibold">{t('portfolio.title')}</CardTitle>
+            <CardDescription className="text-muted-foreground">
+              {portfolio.customerName} · {portfolio.customerId}
+            </CardDescription>
+          </div>
+          {usingMock && (
+            <span className="rounded-full border border-amber-300 bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+              Mock Data
+            </span>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="space-y-6 pt-6">
         <div className="grid gap-4 sm:grid-cols-3">
@@ -64,9 +98,8 @@ export function PortfolioCard() {
               <p className="text-lg font-semibold tabular-nums tracking-tight">
                 {formatCurrency(portfolio.totalValue)}
               </p>
-              <p className={`mt-0.5 text-xs font-medium tabular-nums ${
-                isPositive ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"
-              }`}>
+              <p className={`mt-0.5 text-xs font-medium tabular-nums ${isPositive ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"
+                }`}>
                 {formatPercent(portfolio.dayChangePercent)} {t('portfolio.today')}
               </p>
             </div>
@@ -125,11 +158,10 @@ export function PortfolioCard() {
                     <TableCell className="py-3 text-end tabular-nums">
                       {formatCurrency(holding.value)}
                     </TableCell>
-                    <TableCell className={`py-3 text-end font-medium tabular-nums ${
-                      holding.changePercent >= 0
+                    <TableCell className={`py-3 text-end font-medium tabular-nums ${holding.changePercent >= 0
                         ? "text-emerald-600 dark:text-emerald-400"
                         : "text-red-600 dark:text-red-400"
-                    }`}>
+                      }`}>
                       {formatPercent(holding.changePercent)}
                     </TableCell>
                     <TableCell className="py-3 text-center">
@@ -158,6 +190,7 @@ export function PortfolioCard() {
 
         <p className="text-muted-foreground border-t border-border/80 pt-4 text-xs">
           {t('portfolio.lastUpdated')}: {new Date(portfolio.lastUpdated).toLocaleString()}
+          {usingMock && ' (mock)'}
         </p>
       </CardContent>
     </Card>

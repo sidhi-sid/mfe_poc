@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppTranslation } from '../useAppTranslation';
 import { Search, X, ArrowRight } from 'lucide-react';
@@ -14,6 +15,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import useOmsStore from '@/store/useOmsStore';
+import { useInstruments } from '@/hooks/useInstruments';
 
 const ASSET_VARIANT_MAP = {
   Equity: 'bg-blue-500/10 text-blue-700 border-blue-200',
@@ -28,10 +30,21 @@ export default function InstrumentList() {
   const { t } = useAppTranslation();
   const searchQuery = useOmsStore((s) => s.searchQuery);
   const setSearchQuery = useOmsStore((s) => s.setSearchQuery);
-  const filteredInstruments = useOmsStore((s) => s.filteredInstruments);
   const selectInstrument = useOmsStore((s) => s.selectInstrument);
 
-  const instruments = filteredInstruments();
+  const { instruments: instrumentsFromApi, loading: instrumentsLoading, instrumentsSource } = useInstruments();
+
+  const instruments = useMemo(() => {
+    if (!searchQuery.trim()) return instrumentsFromApi;
+    const q = searchQuery.toLowerCase();
+    return instrumentsFromApi.filter(
+      (ins) =>
+        ins.name.toLowerCase().includes(q) ||
+        ins.ticker.toLowerCase().includes(q) ||
+        ins.assetType.toLowerCase().includes(q) ||
+        ins.subAssetType.toLowerCase().includes(q)
+    );
+  }, [instrumentsFromApi, searchQuery]);
 
   const handleSelect = (instrument) => {
     selectInstrument(instrument);
@@ -41,12 +54,18 @@ export default function InstrumentList() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight">{t('search.title')}</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-bold tracking-tight">{t('search.title')}</h1>
+          {instrumentsSource === 'mock' && (
+            <span className="rounded-full border border-amber-300 bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+              Mock Data
+            </span>
+          )}
+        </div>
         <p className="mt-1 text-sm text-muted-foreground">{t('search.subtitle')}</p>
       </div>
 
       <div className="relative mb-4">
-        {/* start-3 / end-2 = logical left/right — flip automatically in RTL */}
         <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           placeholder={t('search.placeholder')}
@@ -67,9 +86,13 @@ export default function InstrumentList() {
         )}
       </div>
 
-      <p className="mb-4 text-xs text-muted-foreground">
-        {t('search.found', { count: instruments.length })}
-      </p>
+      {instrumentsLoading ? (
+        <p className="mb-4 text-xs text-muted-foreground">Loading instruments…</p>
+      ) : (
+        <p className="mb-4 text-xs text-muted-foreground">
+          {t('search.found', { count: instruments.length })}
+        </p>
+      )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {instruments.map((ins) => (
@@ -103,13 +126,12 @@ export default function InstrumentList() {
                 {ins.currency}{' '}
                 {ins.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}
               </span>
-              {/* rtl:rotate-180 flips the arrow direction in RTL */}
               <ArrowRight className="h-4 w-4 text-primary rtl:rotate-180 transition-transform" />
             </CardFooter>
           </Card>
         ))}
 
-        {instruments.length === 0 && (
+        {!instrumentsLoading && instruments.length === 0 && (
           <div className="col-span-full py-16 text-center text-muted-foreground">
             {t('search.noResults')}
           </div>

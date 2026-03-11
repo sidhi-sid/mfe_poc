@@ -1,23 +1,34 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import InstrumentList from '@/pages/InstrumentList';
-import CreateOrder from '@/pages/CreateOrder';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import InstrumentList from "@/pages/InstrumentList";
+import CreateOrder from "@/pages/CreateOrder";
 
-export function OmsRoutes() {
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5,
+      gcTime: 1000 * 60 * 30,
+    },
+  },
+});
+
+/** Inner app that uses TanStack Query hooks; must be rendered inside QueryClientProvider. */
+function OmsContent() {
   return (
-    <div>
+    <BrowserRouter basename="/oms">
       <Routes>
         <Route path="/" element={<InstrumentList />} />
-        <Route path="/order/:instrumentId" element={<CreateOrder />} />
+        <Route path="order/:instrumentId" element={<CreateOrder />} />
       </Routes>
-    </div>
+    </BrowserRouter>
   );
 }
 
-function App() {
+export function App() {
   return (
-    <BrowserRouter>
-      <OmsRoutes />
-    </BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <OmsContent />
+    </QueryClientProvider>
   );
 }
 
