@@ -14,5 +14,15 @@
     "value": "Value",
     "change": "Change",
     "lastUpdated": "Last updated"
+  },
+  "bank": {
+    "savingBalance": "Saving Account Balance",
+    "depositsInvestment": "Deposits & Investment",
+    "loan": "Loan",
+    "consumed": "Consumed",
+    "creditLimit": "Credit Limit",
+    "accounts": "accounts",
+    "cards": "Cards",
+    "expire": "Expire"
   }
 }

@@ -14,5 +14,15 @@
     "value": "القيمة",
     "change": "التغيير",
     "lastUpdated": "تحديث آخر"
+  },
+  "bank": {
+    "savingBalance": "رصيد حساب التوفير",
+    "depositsInvestment": "الودائع والاستثمارات",
+    "loan": "القرض",
+    "consumed": "المستهلك",
+    "creditLimit": "حد الائتمان",
+    "accounts": "حسابات",
+    "cards": "البطاقات",
+    "expire": "تاريخ الانتهاء"
   }
 }

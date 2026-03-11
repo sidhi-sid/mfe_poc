@@ -1,5 +1,5 @@
 import { useQueries } from '@tanstack/react-query'
-import type { CustomerPortfolio } from '@/data/portfolio-mock'
+import type { CustomerPortfolio, BankSections } from '@/data/portfolio-mock'
 import { mockPortfolio } from '@/data/portfolio-mock'
 import { fetchPortfolio, fetchBank } from '@/api/client'
 
@@ -37,6 +37,7 @@ export function useDashboardData(clientId: number = 201, accessToken?: string | 
   let data: CustomerPortfolio | null = null
   let error: string | null = null
   let usingMock = false
+  let bankSections: BankSections | null = null
 
   if (isError) {
     data = mockPortfolio
@@ -47,12 +48,26 @@ export function useDashboardData(clientId: number = 201, accessToken?: string | 
   } else if (portfolioData != null && bankData != null) {
     data = transformDashboardData(portfolioData, bankData, clientId)
     usingMock = false
+    const bankDetails = (bankData as any)?.bankDetails?.data
+    if (bankDetails) {
+      // totalBalancePosition values are in AED (reference currency = currencyId 247).
+      // The API response has no top-level currency field on each section, so we inject it here.
+      const withCurrency = (section: any) =>
+        section ? { ...section, currency: 'AED' } : null
+      bankSections = {
+        savings: withCurrency(bankDetails.savingsDetails),
+        loans: withCurrency(bankDetails.loanDetails),
+        deposits: withCurrency(bankDetails.depositDetails),
+        cards: bankDetails.cardDetails ?? null,
+      }
+    }
   }
 
   return {
     data,
     rawPortfolio: portfolioData ?? null,
     rawBank: bankData ?? null,
+    bankSections,
     loading: enabled ? isPending : true,
     error,
     usingMock,
