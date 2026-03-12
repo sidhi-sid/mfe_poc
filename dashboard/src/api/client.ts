@@ -3,7 +3,9 @@
  * All fetch calls for dashboard and onboarding are made through these functions.
  */
 
-export const DASHBOARD_API_BASE = 'http://localhost:4001'
+// Dynamically resolve the API host so it works from both localhost and LAN (e.g. phone)
+const API_HOST = typeof window !== 'undefined' ? window.location.hostname : 'localhost'
+export const DASHBOARD_API_BASE = `http://${API_HOST}:4001`
 
 // ---------------------------------------------------------------------------
 // Onboarding

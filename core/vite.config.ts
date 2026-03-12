@@ -8,7 +8,7 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 export default defineConfig({
-  server: { strictPort: true, port: 5173 },
+  server: { strictPort: true, port: 5173, host: true, cors: true },
   plugins: [
     react({
       babel: {

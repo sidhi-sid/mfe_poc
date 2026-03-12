@@ -6,6 +6,9 @@ const config = {
     'http://localhost:5173',
     'http://localhost:5174',
     'http://localhost:5175',
+    'http://192.168.0.142:5173',
+    'http://192.168.0.142:5174',
+    'http://192.168.0.142:5175',
   ],
 };
 

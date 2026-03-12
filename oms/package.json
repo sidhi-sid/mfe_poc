@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "dev:remote": "npm run build && vite preview --port 5174"
+    "dev:remote": "npm run build && vite preview --port 5174 --host"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",

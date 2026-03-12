@@ -3,7 +3,9 @@
  * All fetch calls for instruments and orders go through these functions.
  */
 
-export const OMS_API_BASE = 'http://localhost:4002'
+// Dynamically resolve the API host so it works from both localhost and LAN (e.g. phone)
+const API_HOST = typeof window !== 'undefined' ? window.location.hostname : 'localhost'
+export const OMS_API_BASE = `http://${API_HOST}:4002`
 
 // ---------------------------------------------------------------------------
 // Instruments

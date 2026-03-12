@@ -48,7 +48,13 @@ async function checkModuleAvailable(moduleConfig: ModuleConfig): Promise<boolean
 }
 
 async function loadModules(): Promise<ModuleWithAvailability[]> {
-  const baseUrl = (import.meta.env.VITE_CORE_API_BASE_URL ?? '').toString().trim();
+  let baseUrl = (import.meta.env.VITE_CORE_API_BASE_URL ?? '').toString().trim();
+  
+  // Dynamically resolve localhost to actual hostname for LAN access (e.g. from phone)
+  if (typeof window !== 'undefined' && baseUrl.includes('localhost')) {
+    baseUrl = baseUrl.replace('localhost', window.location.hostname);
+  }
+  
   const configUrl = baseUrl ? `${baseUrl.replace(/\/$/, '')}${MODULE_CONFIG_ENDPOINT}` : '';
 
   if (!configUrl) {
@@ -58,7 +64,13 @@ async function loadModules(): Promise<ModuleWithAvailability[]> {
   const res = await fetch(configUrl);
   if (!res.ok) throw new Error(`Failed to load module config: ${res.status}`);
   const data = await res.json();
-  const list: ModuleConfig[] = data.modules ?? [];
+  const list: ModuleConfig[] = (data.modules ?? []).map((m: ModuleConfig) => {
+    let mBase = m.baseUrl;
+    if (typeof window !== 'undefined' && mBase && mBase.includes('localhost')) {
+      mBase = mBase.replace('localhost', window.location.hostname);
+    }
+    return { ...m, baseUrl: mBase };
+  });
   const withAvailability: ModuleWithAvailability[] = await Promise.all(
     list.map(async (m) => ({
       ...m,

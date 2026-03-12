@@ -9,7 +9,7 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-  server: { strictPort: true, port: 5174 },
+  server: { strictPort: true, port: 5174, host: true, cors: true },
   plugins: [
     react(),
     tailwindcss(),
