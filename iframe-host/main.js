@@ -2,7 +2,8 @@
 //  Bank of Muscat — Client-side page router & iframe
 // ═══════════════════════════════════════════════════
 
-const CORE_URL = 'http://localhost:5173'
+const currentHost = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+const CORE_URL = `http://${currentHost}:5173`
 const LOAD_TIMEOUT_MS = 15_000
 
 // DOM refs
