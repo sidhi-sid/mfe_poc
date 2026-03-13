@@ -8,19 +8,19 @@ import { fetchPortfolio, fetchBank } from '@/api/client'
  * Uses query keys ['portfolio', clientId] and ['bank', clientId] for caching.
  * Queries run only when accessToken is present (enabled). Falls back to mock data on API error.
  */
-export function useDashboardData(clientId: number = 201, accessToken?: string | null) {
-  const enabled = !!accessToken
+export function useDashboardData(clientId: number | null, accessToken?: string | null) {
+  const enabled = !!accessToken && !!clientId
 
   const results = useQueries({
     queries: [
       {
         queryKey: ['portfolio', clientId],
-        queryFn: () => fetchPortfolio(clientId, accessToken!),
+        queryFn: () => fetchPortfolio(clientId!, accessToken!),
         enabled,
       },
       {
         queryKey: ['bank', clientId],
-        queryFn: () => fetchBank(clientId, accessToken!),
+        queryFn: () => fetchBank(clientId!, accessToken!),
         enabled,
       },
     ],
@@ -46,7 +46,7 @@ export function useDashboardData(clientId: number = 201, accessToken?: string | 
       ? (portfolioError ?? bankError)!.message
       : 'Unknown error'
   } else if (portfolioData != null && bankData != null) {
-    data = transformDashboardData(portfolioData, bankData, clientId)
+    data = transformDashboardData(portfolioData, bankData, clientId!)
     usingMock = false
     const bankDetails = (bankData as any)?.bankDetails?.data
     if (bankDetails) {

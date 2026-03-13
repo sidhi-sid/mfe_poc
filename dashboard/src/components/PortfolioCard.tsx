@@ -1,4 +1,5 @@
-import { ArrowUpRight } from "lucide-react"
+import { useState } from "react"
+import { ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-react"
 import { useAppTranslation } from '../useAppTranslation'
 import {
   Card,
@@ -16,7 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { useDashboardData } from "@/hooks/useDashboardData"
+import type { CustomerPortfolio } from "@/data/portfolio-mock"
 
 const SYMBOL_TO_INSTRUMENT_ID: Record<string, string> = {
   AAPL: "INS001",
@@ -42,22 +43,15 @@ function formatPercent(value: number) {
 }
 
 interface PortfolioCardProps {
-  accessToken?: string | null
+  portfolio?: CustomerPortfolio | null
+  error?: string | null
+  usingMock?: boolean
 }
 
-export function PortfolioCard({ accessToken }: PortfolioCardProps = {}) {
-  const { data: portfolio, loading, error, usingMock } = useDashboardData(201, accessToken)
+export function PortfolioCard({ portfolio, error, usingMock }: PortfolioCardProps = {}) {
   const { t } = useAppTranslation()
-
-  if (loading) {
-    return (
-      <Card className="w-full overflow-hidden shadow-sm">
-        <CardContent className="flex min-h-[200px] items-center justify-center">
-          <p className="text-muted-foreground">Loading dashboard data…</p>
-        </CardContent>
-      </Card>
-    )
-  }
+  const [currentPage, setCurrentPage] = useState(0)
+  const pageSize = 10
 
   if (!portfolio) {
     return (
@@ -70,6 +64,12 @@ export function PortfolioCard({ accessToken }: PortfolioCardProps = {}) {
   }
 
   const isPositive = portfolio.dayChangePercent >= 0
+
+  const totalPages = Math.ceil((portfolio.holdings?.length || 0) / pageSize)
+  const paginatedHoldings = portfolio.holdings?.slice(
+    currentPage * pageSize,
+    (currentPage + 1) * pageSize
+  ) || []
 
   return (
     <Card className="w-full overflow-hidden shadow-sm">
@@ -150,7 +150,7 @@ export function PortfolioCard({ accessToken }: PortfolioCardProps = {}) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {portfolio.holdings.map((holding) => (
+                {paginatedHoldings.map((holding) => (
                   <TableRow key={holding.symbol} className="border-border/80">
                     <TableCell className="py-3 font-medium">{holding.symbol}</TableCell>
                     <TableCell className="py-3 text-muted-foreground">{holding.name}</TableCell>
@@ -159,8 +159,8 @@ export function PortfolioCard({ accessToken }: PortfolioCardProps = {}) {
                       {formatCurrency(holding.value)}
                     </TableCell>
                     <TableCell className={`py-3 text-end font-medium tabular-nums ${holding.changePercent >= 0
-                        ? "text-emerald-600 dark:text-emerald-400"
-                        : "text-red-600 dark:text-red-400"
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-red-600 dark:text-red-400"
                       }`}>
                       {formatPercent(holding.changePercent)}
                     </TableCell>
@@ -186,6 +186,40 @@ export function PortfolioCard({ accessToken }: PortfolioCardProps = {}) {
               </TableBody>
             </Table>
           </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between px-2 pt-2">
+              <p className="text-xs text-muted-foreground">
+                Showing {currentPage * pageSize + 1} to {Math.min((currentPage + 1) * pageSize, portfolio.holdings.length)} of {portfolio.holdings.length} entries
+              </p>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  onClick={() => setCurrentPage((prev) => Math.max(0, prev - 1))}
+                  disabled={currentPage === 0}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  <span className="sr-only">Previous</span>
+                </Button>
+                <div className="text-sm font-medium">
+                  {currentPage + 1} / {totalPages}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  onClick={() => setCurrentPage((prev) => Math.min(totalPages - 1, prev + 1))}
+                  disabled={currentPage === totalPages - 1}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                  <span className="sr-only">Next</span>
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
 
         <p className="text-muted-foreground border-t border-border/80 pt-4 text-xs">

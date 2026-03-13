@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
 import { useModules } from '@/hooks/useModules';
+import { useOnboardingAuth } from '../hooks/useOnboardingBootstrap';
 
 const ICON_MAP: Record<string, typeof LayoutDashboard> = {
   LayoutDashboard,
@@ -27,7 +28,8 @@ const AppSidebar = () => {
   const { language, isRTL, setLanguage } = useLanguageStore();
   const location = useLocation();
   const { isMobile, setOpenMobile } = useSidebar();
-  const { availableModules, loading } = useModules();
+  const { auth } = useOnboardingAuth();
+  const { availableModules, loading } = useModules(auth?.token ?? null);
   const { t } = useTranslation();
 
   const isArabic = language === 'ar';
