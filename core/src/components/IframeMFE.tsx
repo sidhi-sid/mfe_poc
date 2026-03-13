@@ -1,4 +1,5 @@
 import type { ModuleWithAvailability } from '@/hooks/useModules'
+import type { OnboardingResult } from '../hooks/useOnboardingBootstrap'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 
 // ---------------------------------------------------------------------------
@@ -44,9 +45,10 @@ const HOST_EVENTS: HostEvent[] = [
 // ---------------------------------------------------------------------------
 interface IframeMFEProps {
   module: ModuleWithAvailability
+  onboardingData?: OnboardingResult | null
 }
 
-export function IframeMFE({ module }: IframeMFEProps) {
+export function IframeMFE({ module, onboardingData }: IframeMFEProps) {
   const iframeRef = useRef<HTMLIFrameElement | null>(null)
 
   // Build the iframe URL with current host state as query params.
@@ -80,8 +82,15 @@ export function IframeMFE({ module }: IframeMFEProps) {
       _dir: currentDir,
     })
 
+    if (onboardingData?.account?.id) {
+      params.set('_clientId', String(onboardingData.account.id))
+    }
+    if (onboardingData?.auth?.token) {
+      params.set('_accessToken', onboardingData.auth.token)
+    }
+
     return `${baseUrl}?${params.toString()}`
-  }, [module.baseUrl, module.path])
+  }, [module.baseUrl, module.path, onboardingData])
 
   // Helper: send a namespaced message to the iframe
   const postToIframe = useCallback(

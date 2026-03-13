@@ -13,6 +13,7 @@ import {
 import { useModules } from "@/hooks/useModules"
 import { IframeMFE } from "@/components/IframeMFE"
 import { useMfeNotifications } from "@/hooks/useMfeNotifications"
+import { useOnboardingAuth, useAccountData } from "./hooks/useOnboardingBootstrap"
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -23,11 +24,18 @@ const queryClient = new QueryClient({
   },
 })
 
-// Wrapper to handle sidebar toggle from Header
+// Flow: getWMURL → authSelfOnboarding → modules (authenticated) → fetchAccountByCifNumber → portfolio/bank
 const AppLayout = () => {
   const { toggleSidebar } = useSidebar();
-  const { availableModules, loading } = useModules();
+  const { loading: authLoading, error: authError, auth } = useOnboardingAuth();
+  const { availableModules, loading: modulesLoading, error: modulesError } = useModules(auth?.token ?? null);
+  const modulesLoaded = !modulesLoading && (auth?.token ? true : false);
+  const { account, loading: accountLoading, error: accountError } = useAccountData(auth, modulesLoaded);
   useMfeNotifications();
+
+  const onboardingData = auth && account ? { auth, account } : null;
+  const loading = authLoading || modulesLoading || accountLoading;
+  const error = authError ?? modulesError ?? accountError;
 
   return (
     <SidebarInset>
@@ -38,14 +46,22 @@ const AppLayout = () => {
             Each route renders the MFE in an iframe via IframeMFE component. */}
         <main className="flex-1 p-6">
           {loading ? (
-            <p className="text-muted-foreground">Loading modules...</p>
+            <div className="flex min-h-[400px] flex-col items-center justify-center gap-4">
+              <div className="h-10 w-10 animate-spin rounded-full border-[3px] border-border border-t-primary" />
+              <p className="text-center text-[15px] font-medium text-foreground">Loading Wealth App…</p>
+              <p className="text-center text-xs text-muted-foreground">Connecting to wealth management platform</p>
+            </div>
+          ) : error ? (
+            <p className="text-destructive">
+              Failed to bootstrap: {error.message}
+            </p>
           ) : (
             <Routes>
               {availableModules.map((m) => (
                 <Route
                   key={m.id}
                   path={`${m.path}/*`}
-                  element={<IframeMFE key={m.id} module={m} />}
+                  element={<IframeMFE key={m.id} module={m} onboardingData={onboardingData} />}
                 />
               ))}
               <Route

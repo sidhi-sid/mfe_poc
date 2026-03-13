@@ -1,5 +1,4 @@
 import { useAppTranslation } from './useAppTranslation'
-import { useWMURL } from './hooks/useWMURL'
 import { PortfolioCard } from '@/components/PortfolioCard'
 import { BankOverviewCards } from '@/components/BankOverviewCards'
 import { useDashboardData } from '@/hooks/useDashboardData'
@@ -14,12 +13,32 @@ const queryClient = new QueryClient({
   },
 })
 
-/** Inner app that uses TanStack Query hooks; must be rendered inside QueryClientProvider. */
+function useHostParams() {
+  const params = new URLSearchParams(window.location.search)
+  const clientId = Number(params.get('_clientId')) || null
+  const accessToken = params.get('_accessToken') || null
+  return { clientId, accessToken }
+}
+
 function DashboardContent() {
   const { t } = useAppTranslation()
-  const { authResponse } = useWMURL({ cifNumber: '123456', accountType: 'Individual' })
-  const accessToken = authResponse?.token ?? null
-  const { bankSections } = useDashboardData(201, accessToken)
+  const { clientId, accessToken } = useHostParams()
+  const { data: portfolio, bankSections, loading, error, usingMock } = useDashboardData(clientId, accessToken)
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[400px] flex-col items-center justify-center">
+        <div
+          className="mb-5 h-10 w-10 animate-spin rounded-full border-[3px] border-muted border-t-primary"
+          aria-hidden
+        />
+        <p className="text-center text-[15px] font-medium text-foreground">Loading Wealth App…</p>
+        <p className="mt-1 text-center text-xs text-muted-foreground">
+          Connecting to wealth management platform
+        </p>
+      </div>
+    )
+  }
 
   return (
     <div className="w-full space-y-8">
@@ -32,7 +51,7 @@ function DashboardContent() {
         </p>
       </header>
       <BankOverviewCards bankSections={bankSections} />
-      <PortfolioCard accessToken={accessToken} />
+      <PortfolioCard portfolio={portfolio} error={error} usingMock={usingMock} />
     </div>
   )
 }

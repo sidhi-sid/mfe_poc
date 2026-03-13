@@ -17,7 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { useDashboardData } from "@/hooks/useDashboardData"
+import type { CustomerPortfolio } from "@/data/portfolio-mock"
 
 const SYMBOL_TO_INSTRUMENT_ID: Record<string, string> = {
   AAPL: "INS001",
@@ -43,24 +43,15 @@ function formatPercent(value: number) {
 }
 
 interface PortfolioCardProps {
-  accessToken?: string | null
+  portfolio?: CustomerPortfolio | null
+  error?: string | null
+  usingMock?: boolean
 }
 
-export function PortfolioCard({ accessToken }: PortfolioCardProps = {}) {
-  const { data: portfolio, loading, error, usingMock } = useDashboardData(201, accessToken)
+export function PortfolioCard({ portfolio, error, usingMock }: PortfolioCardProps = {}) {
   const { t } = useAppTranslation()
   const [currentPage, setCurrentPage] = useState(0)
   const pageSize = 10
-
-  if (loading) {
-    return (
-      <Card className="w-full overflow-hidden shadow-sm">
-        <CardContent className="flex min-h-[200px] items-center justify-center">
-          <p className="text-muted-foreground">Loading dashboard data…</p>
-        </CardContent>
-      </Card>
-    )
-  }
 
   if (!portfolio) {
     return (
