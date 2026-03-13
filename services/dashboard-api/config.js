@@ -16,6 +16,8 @@ const config = {
     'http://localhost:5173',
     'http://localhost:5174',
     'http://localhost:5175',
+    // Allow iframe-host shell to call onboarding APIs
+    'http://localhost:5180',
   ],
 };
 
