@@ -4,6 +4,10 @@
 
 const CORE_URL = 'http://localhost:5173'
 const LOAD_TIMEOUT_MS = 15_000
+// Point directly to the dashboard Fastify backend (same as DASHBOARD_API_BASE)
+const ONBOARDING_BASE_URL = 'http://localhost:4001/api/onboarding'
+const DEFAULT_CIF_NUMBER = '999777'
+const DEFAULT_ACCOUNT_TYPE = 'Individual'
 
 // DOM refs
 const pages = {
@@ -23,6 +27,7 @@ const retryBtn      = document.getElementById('retry-btn')
 let currentPage = 'home'
 let iframeLoaded = false
 let loadTimer = null
+let onboardingInFlight = false
 
 // ── Page navigation ───────────────────────────────
 function navigateTo(pageName) {
@@ -45,9 +50,10 @@ function navigateTo(pageName) {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  // Load iframe on first visit to wealth page
+  // Load iframe on first visit to wealth page, but only
+  // after we successfully hit the onboarding getWMURL API.
   if (pageName === 'wealth' && !iframeLoaded) {
-    loadIframe()
+    startWealthOnboardingFlow()
   }
 
   // Update browser title
@@ -82,13 +88,62 @@ function showConnected() {
   iframeLoaded = true
 }
 
-function loadIframe() {
+function loadIframe(wmUrl) {
   showLoading()
-  iframe.src = CORE_URL
+
+  const url = new URL(CORE_URL)
+  if (wmUrl) {
+    url.searchParams.set('wmUrl', wmUrl)
+    // Also pass the CIF number we used for getWMURL so the core app
+    // can use a consistent identifier when fetching client details.
+    url.searchParams.set('cifNumber', DEFAULT_CIF_NUMBER)
+  }
+
+  iframe.src = url.toString()
 
   loadTimer = setTimeout(() => {
     showError()
   }, LOAD_TIMEOUT_MS)
+}
+
+async function callGetWMURL() {
+  const url = new URL(`${ONBOARDING_BASE_URL}/getWMURL`, window.location.origin)
+  url.searchParams.set('cifNumber', DEFAULT_CIF_NUMBER)
+  url.searchParams.set('accountType', DEFAULT_ACCOUNT_TYPE)
+
+  const response = await fetch(url.toString(), {
+    method: 'GET',
+    headers: {
+      'Accept': 'application/json',
+    },
+  })
+
+  if (!response.ok) {
+    throw new Error(`getWMURL failed with status ${response.status}`)
+  }
+
+  const data = await response.json()
+  return data
+}
+
+async function startWealthOnboardingFlow() {
+  if (onboardingInFlight) {
+    return
+  }
+
+  onboardingInFlight = true
+  showLoading()
+
+  try {
+    const wmData = await callGetWMURL()
+    const wmUrl = wmData && typeof wmData.url === 'string' ? wmData.url : null
+    loadIframe(wmUrl)
+  } catch (error) {
+    console.error('Failed to start Wealth App onboarding:', error)
+    showError()
+  } finally {
+    onboardingInFlight = false
+  }
 }
 
 iframe.addEventListener('load', () => {
@@ -96,7 +151,9 @@ iframe.addEventListener('load', () => {
 })
 
 retryBtn.addEventListener('click', () => {
-  loadIframe()
+  // Retry the full onboarding + iframe load flow
+  iframeLoaded = false
+  startWealthOnboardingFlow()
 })
 
 // ── Navigation event listeners ────────────────────

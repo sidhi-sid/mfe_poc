@@ -3,7 +3,17 @@
 const { getModuleConfig } = require('../module-config');
 
 async function moduleRoutes(fastify) {
-  fastify.get('/modules', async (_request, reply) => {
+  fastify.get('/modules', {
+    preHandler: async (request, reply) => {
+      const authHeader = request.headers.authorization;
+      if (!authHeader || typeof authHeader !== 'string' || authHeader.trim() === '') {
+        return reply.code(401).send({
+          error: 'Unauthorized',
+          message: 'Authorization required. Modules endpoint requires a valid token from authSelfOnboarding.',
+        });
+      }
+    },
+  }, async (request, reply) => {
     try {
       const data = await getModuleConfig();
       return reply.send(data);

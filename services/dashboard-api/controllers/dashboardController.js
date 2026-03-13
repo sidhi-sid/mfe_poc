@@ -117,6 +117,20 @@ async function authSelfOnboarding(request, reply) {
   reply.code(result.status).send(result.data);
 }
 
+async function fetchAccountByCifNumber(request, reply) {
+  const { cifNumber } = request.query;
+  const lbPath = `Accounts/fetchAccountByCifNumber`;
+  const result = await proxyToLoopback({
+    method: 'GET',
+    path: lbPath,
+    token: request.lbToken,
+    query: {
+      cifNumber
+    },
+  });
+  reply.code(result.status).send(result.data);
+}
+
 module.exports = {
   getPortfolio,
   getBank,
@@ -124,4 +138,5 @@ module.exports = {
   getDashboardAction,
   getWMURL,
   authSelfOnboarding,
+  fetchAccountByCifNumber,
 };

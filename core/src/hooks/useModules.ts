@@ -47,7 +47,7 @@ async function checkModuleAvailable(moduleConfig: ModuleConfig): Promise<boolean
   }
 }
 
-async function loadModules(): Promise<ModuleWithAvailability[]> {
+async function loadModules(accessToken: string): Promise<ModuleWithAvailability[]> {
   const baseUrl = (import.meta.env.VITE_CORE_API_BASE_URL ?? '').toString().trim();
   const configUrl = baseUrl ? `${baseUrl.replace(/\/$/, '')}${MODULE_CONFIG_ENDPOINT}` : '';
 
@@ -55,7 +55,12 @@ async function loadModules(): Promise<ModuleWithAvailability[]> {
     throw new Error('VITE_CORE_API_BASE_URL is not set. Set it to your core-api base URL (e.g. http://localhost:4000).');
   }
 
-  const res = await fetch(configUrl);
+  const headers: HeadersInit = {};
+  if (accessToken) {
+    headers['Authorization'] = accessToken.startsWith('Bearer ') ? accessToken : `Bearer ${accessToken}`;
+  }
+
+  const res = await fetch(configUrl, { headers });
   if (!res.ok) throw new Error(`Failed to load module config: ${res.status}`);
   const data = await res.json();
   const list: ModuleConfig[] = data.modules ?? [];
@@ -68,10 +73,12 @@ async function loadModules(): Promise<ModuleWithAvailability[]> {
   return withAvailability;
 }
 
-export function useModules() {
+export function useModules(accessToken: string | null | undefined) {
+  const enabled = !!accessToken;
   const query = useQuery({
-    queryKey: ['modules'],
-    queryFn: loadModules,
+    queryKey: ['modules', accessToken],
+    queryFn: () => loadModules(accessToken!),
+    enabled,
   });
 
   const modules = (query.data ?? []) as ModuleWithAvailability[];
