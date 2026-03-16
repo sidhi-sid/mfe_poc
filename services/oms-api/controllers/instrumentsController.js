@@ -22,7 +22,7 @@ async function listInstruments(request, reply) {
   const cacheKey = `oms:instruments:list:${searchKey}`;
   const cached = cache.isEnabled() ? await cache.get(cacheKey) : null;
   if (cached) {
-    reply.send(cached);
+    reply.header('X-Cache', 'HIT').send(cached);
     return;
   }
 
@@ -39,7 +39,7 @@ async function listInstruments(request, reply) {
   }
 
   if (cache.isEnabled()) await cache.set(cacheKey, instruments);
-  reply.send(instruments);
+  reply.header('X-Cache', 'MISS').send(instruments);
 }
 
 async function getInstrumentById(request, reply) {
@@ -47,7 +47,7 @@ async function getInstrumentById(request, reply) {
   const cacheKey = `oms:instruments:id:${id}`;
   const cached = cache.isEnabled() ? await cache.get(cacheKey) : null;
   if (cached) {
-    reply.send(cached);
+    reply.header('X-Cache', 'HIT').send(cached);
     return;
   }
 
@@ -58,7 +58,7 @@ async function getInstrumentById(request, reply) {
   }
 
   if (cache.isEnabled()) await cache.set(cacheKey, instrument);
-  reply.send(instrument);
+  reply.header('X-Cache', 'MISS').send(instrument);
 }
 
 async function createOrder(request, reply) {

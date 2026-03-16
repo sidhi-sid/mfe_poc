@@ -22,7 +22,7 @@ async function getPortfolio(request, reply) {
   const cacheKey = cache.buildKey('portfolio', [clientId, cache.hashQuery(query)]);
   const cached = cache.isEnabled() ? await cache.get(cacheKey) : null;
   if (cached) {
-    reply.code(cached.status).send(cached.data);
+    reply.header('X-Cache', 'HIT').code(cached.status).send(cached.data);
     return;
   }
 
@@ -34,7 +34,7 @@ async function getPortfolio(request, reply) {
     query,
   });
   if (cache.isEnabled()) await cache.set(cacheKey, { status: result.status, data: result.data });
-  reply.code(result.status).send(result.data);
+  reply.header('X-Cache', 'MISS').code(result.status).send(result.data);
 }
 
 async function getBank(request, reply) {
@@ -61,7 +61,7 @@ async function getBank(request, reply) {
   const cacheKey = cache.buildKey('bank', [clientId, cache.hashQuery(query)]);
   const cached = cache.isEnabled() ? await cache.get(cacheKey) : null;
   if (cached) {
-    reply.code(cached.status).send(cached.data);
+    reply.header('X-Cache', 'HIT').code(cached.status).send(cached.data);
     return;
   }
 
@@ -73,7 +73,7 @@ async function getBank(request, reply) {
     query,
   });
   if (cache.isEnabled()) await cache.set(cacheKey, { status: result.status, data: result.data });
-  reply.code(result.status).send(result.data);
+  reply.header('X-Cache', 'MISS').code(result.status).send(result.data);
 }
 
 async function getDashboardData(request, reply) {
@@ -81,7 +81,7 @@ async function getDashboardData(request, reply) {
   const cacheKey = cache.buildKey('data', [clientId, cache.hashQuery(request.query)]);
   const cached = cache.isEnabled() ? await cache.get(cacheKey) : null;
   if (cached) {
-    reply.code(cached.status).send(cached.data);
+    reply.header('X-Cache', 'HIT').code(cached.status).send(cached.data);
     return;
   }
 
@@ -93,7 +93,7 @@ async function getDashboardData(request, reply) {
     query: request.query,
   });
   if (cache.isEnabled()) await cache.set(cacheKey, { status: result.status, data: result.data });
-  reply.code(result.status).send(result.data);
+  reply.header('X-Cache', 'MISS').code(result.status).send(result.data);
 }
 
 async function getDashboardAction(request, reply) {
@@ -103,7 +103,7 @@ async function getDashboardAction(request, reply) {
   const cacheKey = cache.buildKey('action', [clientId, action, cache.hashQuery(request.query)]);
   const cached = cache.isEnabled() ? await cache.get(cacheKey) : null;
   if (cached) {
-    reply.code(cached.status).send(cached.data);
+    reply.header('X-Cache', 'HIT').code(cached.status).send(cached.data);
     return;
   }
 
@@ -115,7 +115,7 @@ async function getDashboardAction(request, reply) {
     query: request.query,
   });
   if (cache.isEnabled()) await cache.set(cacheKey, { status: result.status, data: result.data });
-  reply.code(result.status).send(result.data);
+  reply.header('X-Cache', 'MISS').code(result.status).send(result.data);
 }
 
 async function getWMURL(request, reply) {
@@ -126,7 +126,7 @@ async function getWMURL(request, reply) {
   const cacheKey = cache.buildKey('wmurl', [cache.hashQuery(query)]);
   const cached = cache.isEnabled() ? await cache.get(cacheKey) : null;
   if (cached) {
-    reply.code(cached.status).send(cached.data);
+    reply.header('X-Cache', 'HIT').code(cached.status).send(cached.data);
     return;
   }
 
@@ -138,7 +138,7 @@ async function getWMURL(request, reply) {
     query,
   });
   if (cache.isEnabled()) await cache.set(cacheKey, { status: result.status, data: result.data });
-  reply.code(result.status).send(result.data);
+  reply.header('X-Cache', 'MISS').code(result.status).send(result.data);
 }
 
 async function authSelfOnboarding(request, reply) {
@@ -157,7 +157,7 @@ async function fetchAccountByCifNumber(request, reply) {
   const cacheKey = cache.buildKey('account:cif', [cifNumber || '']);
   const cached = cache.isEnabled() ? await cache.get(cacheKey) : null;
   if (cached) {
-    reply.code(cached.status).send(cached.data);
+    reply.header('X-Cache', 'HIT').code(cached.status).send(cached.data);
     return;
   }
 
@@ -169,7 +169,7 @@ async function fetchAccountByCifNumber(request, reply) {
     query: { cifNumber },
   });
   if (cache.isEnabled()) await cache.set(cacheKey, { status: result.status, data: result.data });
-  reply.code(result.status).send(result.data);
+  reply.header('X-Cache', 'MISS').code(result.status).send(result.data);
 }
 
 module.exports = {
