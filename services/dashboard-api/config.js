@@ -4,6 +4,11 @@ const config = {
   lbBaseUrl: process.env.LB_BASE_URL || 'https://bm-rhel-second-staging.wealthfy.com/api',
   lbToken: process.env.LB_TOKEN || '',
   lbCookie: process.env.LB_COOKIE || '',
+  redis: {
+    url: process.env.REDIS_URL || 'redis://localhost:6379',
+    ttlSeconds: parseInt(process.env.REDIS_TTL_SECONDS || '300', 10),
+    enabled: process.env.REDIS_ENABLED !== 'false',
+  },
   lbHeaders: {
     source: process.env.LB_SOURCE || 'web',
     version: process.env.LB_VERSION || '1.0.0',

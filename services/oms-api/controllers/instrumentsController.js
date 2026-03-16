@@ -1,5 +1,7 @@
 'use strict';
 
+const cache = require('../lib/redis-cache');
+
 const MOCK_INSTRUMENTS = [
   { id: 'INS001', name: 'Apple Inc.', ticker: 'AAPL', assetType: 'Equity', subAssetType: 'Large Cap', currency: 'USD', price: 187.44, exchange: 'NASDAQ', factsheetUrl: 'https://finance.yahoo.com/quote/AAPL' },
   { id: 'INS002', name: 'Microsoft Corp.', ticker: 'MSFT', currency: 'USD', assetType: 'Equity', subAssetType: 'Large Cap', price: 420.72, exchange: 'NASDAQ', factsheetUrl: 'https://finance.yahoo.com/quote/MSFT' },
@@ -15,11 +17,18 @@ const MOCK_INSTRUMENTS = [
 
 async function listInstruments(request, reply) {
   const { search } = request.query;
+  const searchKey = (search && search.trim()) ? search.trim() : '';
+
+  const cacheKey = `oms:instruments:list:${searchKey}`;
+  const cached = cache.isEnabled() ? await cache.get(cacheKey) : null;
+  if (cached) {
+    reply.send(cached);
+    return;
+  }
 
   let instruments = MOCK_INSTRUMENTS;
-
-  if (search && search.trim()) {
-    const q = search.toLowerCase();
+  if (searchKey) {
+    const q = searchKey.toLowerCase();
     instruments = instruments.filter(
       (ins) =>
         ins.name.toLowerCase().includes(q) ||
@@ -29,18 +38,26 @@ async function listInstruments(request, reply) {
     );
   }
 
+  if (cache.isEnabled()) await cache.set(cacheKey, instruments);
   reply.send(instruments);
 }
 
 async function getInstrumentById(request, reply) {
   const { id } = request.params;
-  const instrument = MOCK_INSTRUMENTS.find((ins) => ins.id === id);
+  const cacheKey = `oms:instruments:id:${id}`;
+  const cached = cache.isEnabled() ? await cache.get(cacheKey) : null;
+  if (cached) {
+    reply.send(cached);
+    return;
+  }
 
+  const instrument = MOCK_INSTRUMENTS.find((ins) => ins.id === id);
   if (!instrument) {
     reply.code(404).send({ error: 'Not Found', message: `Instrument ${id} not found` });
     return;
   }
 
+  if (cache.isEnabled()) await cache.set(cacheKey, instrument);
   reply.send(instrument);
 }
 

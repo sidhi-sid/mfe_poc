@@ -8,8 +8,18 @@ const config = require('./config');
 const authPlugin = require('./auth-plugin');
 const proxyRoutes = require('./routes/proxy');
 const instrumentRoutes = require('./routes/instruments');
+const redisCache = require('./lib/redis-cache');
 
 async function start() {
+  if (config.redis.enabled) {
+    const connected = await redisCache.connect();
+    fastify.log.info(connected ? 'Redis cache connected' : 'Redis cache disabled');
+  }
+
+  fastify.addHook('onClose', async () => {
+    await redisCache.disconnect();
+  });
+
   await fastify.register(cors, {
     origin: config.corsOrigins,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],

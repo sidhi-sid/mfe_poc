@@ -87,6 +87,10 @@ npm run dev
 
 Get your LoopBack token by logging into BM_WEALTH_MANAGEMENT and copying it from the session.
 
+### Redis caching (dashboard-api & oms-api)
+
+Both APIs support optional Redis caching for GET responses. See **[Redis Caching Implementation](./docs/REDIS_CACHING_README.md)** for requirements, configuration (`REDIS_URL`, `REDIS_TTL_SECONDS`, `REDIS_ENABLED`), and how to run Redis locally or via Docker.
+
 ### Generic Proxy
 
 The OMS API includes a catch-all proxy at `/api/lb/*` that forwards any request to LoopBack 3:
