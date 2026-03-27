@@ -1,6 +1,7 @@
 // ═══════════════════════════════════════════════════
 //  Bank of Muscat — Client-side page router & iframe
 // ═══════════════════════════════════════════════════
+console.log('[main.js] script loaded');
 
 const CORE_URL = 'http://localhost:5173'
 const LOAD_TIMEOUT_MS = 15_000
@@ -147,6 +148,7 @@ async function startWealthOnboardingFlow() {
 }
 
 iframe.addEventListener('load', () => {
+  if (!iframe.src || iframe.src === 'about:blank') return
   showConnected()
 })
 

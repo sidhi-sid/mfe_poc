@@ -2,9 +2,16 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* Arabic font fallback for iOS WebView — covers all Arabic Unicode blocks */
+@font-face {
+  font-family: 'ArabicFallback';
+  src: local('Geeza Pro'), local('Al Nile'), local('Arabic Typesetting'), local('Tahoma');
+  unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF;
+}
+
 @custom-variant dark (&:is(.dark *));
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'ArabicFallback', system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
@@ -139,5 +146,5 @@ a {
 
 /* RTL: system Arabic font — no CDN dependency */
 [dir="rtl"] {
-  font-family: "Segoe UI", Tahoma, "Arabic Typesetting", system-ui, sans-serif;
+  font-family: "Geeza Pro", "Al Nile", -apple-system, "Segoe UI", Tahoma, "Arabic Typesetting", system-ui, sans-serif;
 }
