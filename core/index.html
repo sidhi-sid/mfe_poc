@@ -1,10 +1,22 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" dir="ltr">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>core</title>
+    <script>
+      // Restore language/dir before React mounts — prevents layout flash on reload
+      (function () {
+        try {
+          var lang = localStorage.getItem('bm-language');
+          if (lang === 'ar') {
+            document.documentElement.setAttribute('dir', 'rtl');
+            document.documentElement.setAttribute('lang', 'ar');
+          }
+        } catch {}
+      })();
+    </script>
     <script>
       // Keep in sync with THEME_STORAGE_KEY in src/lib/theme.ts
       (function () {

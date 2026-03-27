@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
 export interface ModuleConfig {
   id: string;
@@ -13,6 +13,9 @@ export interface ModuleWithAvailability extends ModuleConfig {
 }
 
 const HEALTH_CHECK_TIMEOUT_MS = 3000;
+
+/** Endpoint on core-api that returns module config (same shape as module.json). */
+const MODULE_CONFIG_ENDPOINT = '/api/modules';
 
 async function checkModuleAvailable(moduleConfig: ModuleConfig): Promise<boolean> {
   const { baseUrl } = moduleConfig;
@@ -44,46 +47,51 @@ async function checkModuleAvailable(moduleConfig: ModuleConfig): Promise<boolean
   }
 }
 
-export function useModules() {
-  const [modules, setModules] = useState<ModuleWithAvailability[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+async function loadModules(accessToken: string): Promise<ModuleWithAvailability[]> {
+  const baseUrl = (import.meta.env.VITE_CORE_API_BASE_URL ?? '').toString().trim();
+  const configUrl = baseUrl ? `${baseUrl.replace(/\/$/, '')}${MODULE_CONFIG_ENDPOINT}` : '';
 
-  useEffect(() => {
-    let cancelled = false;
+  if (!configUrl) {
+    throw new Error('VITE_CORE_API_BASE_URL is not set. Set it to your core-api base URL (e.g. http://localhost:4000).');
+  }
 
-    async function load() {
-      try {
-        const res = await fetch('/module.json');
-        if (!res.ok) throw new Error('Failed to load module config');
-        const data = await res.json();
-        const list: ModuleConfig[] = data.modules ?? [];
-        const withAvailability: ModuleWithAvailability[] = await Promise.all(
-          list.map(async (m) => ({
-            ...m,
-            available: await checkModuleAvailable(m),
-          }))
-        );
-        if (!cancelled) {
-          setModules(withAvailability);
-        }
-      } catch (e) {
-        if (!cancelled) {
-          setError(e instanceof Error ? e : new Error('Unknown error'));
-          setModules([]);
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
+  const headers: HeadersInit = {};
+  if (accessToken) {
+    headers['Authorization'] = accessToken.startsWith('Bearer ') ? accessToken : `Bearer ${accessToken}`;
+  }
 
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const res = await fetch(configUrl, { headers });
+  if (!res.ok) throw new Error(`Failed to load module config: ${res.status}`);
+  const data = await res.json();
+  const list: ModuleConfig[] = data.modules ?? [];
+  const withAvailability: ModuleWithAvailability[] = await Promise.all(
+    list.map(async (m) => ({
+      ...m,
+      available: await checkModuleAvailable(m),
+    }))
+  );
+  return withAvailability;
+}
 
+export function useModules(accessToken: string | null | undefined) {
+  const enabled = !!accessToken;
+  const query = useQuery({
+    queryKey: ['modules', accessToken],
+    queryFn: () => loadModules(accessToken!),
+    enabled,
+  });
+
+  const modules = (query.data ?? []) as ModuleWithAvailability[];
   const availableModules = modules.filter((m) => m.available);
+  const error =
+    query.error != null
+      ? (query.error instanceof Error ? query.error : new Error('Unknown error'))
+      : null;
 
-  return { modules, availableModules, loading, error };
+  return {
+    modules,
+    availableModules,
+    loading: query.isPending,
+    error,
+  };
 }

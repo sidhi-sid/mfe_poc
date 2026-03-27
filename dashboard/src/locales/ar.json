@@ -1,0 +1,28 @@
+{
+  "title": "لوحة المعلومات",
+  "subtitle": "نظرة عامة على ملف العميل",
+  "portfolio": {
+    "title": "العميل ملف",
+    "totalValue": "إجمالي القيمة",
+    "today": "اليوم",
+    "invested": "المستثمر المبلغ",
+    "cashBalance": "النقدي الرصيد",
+    "holdings": "الحيازات",
+    "symbol": "الرمز",
+    "name": "الاسم",
+    "qty": "الكمية",
+    "value": "القيمة",
+    "change": "التغيير",
+    "lastUpdated": "تحديث آخر"
+  },
+  "bank": {
+    "savingBalance": "رصيد حساب التوفير",
+    "depositsInvestment": "الودائع والاستثمارات",
+    "loan": "القرض",
+    "consumed": "المستهلك",
+    "creditLimit": "حد الائتمان",
+    "accounts": "حسابات",
+    "cards": "البطاقات",
+    "expire": "تاريخ الانتهاء"
+  }
+}
